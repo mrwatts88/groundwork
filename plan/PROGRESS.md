@@ -111,3 +111,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R1-plan on the second run. The first run failed because R1-playtest had no effort. That run also flagged a missing check on the rival reflex's information limits, so R1-11 and R1-review now cover invariant 2.
 - **Learned:** plan-ring wants effort on every item, human ones too. Ring 0's human items lack it, so do not copy them. Plan order is build order, because `plan.py next` sorts only by in_progress.
 - **Next:** R1-01. Matt: R0-look (does not block).
+
+## 2026-11-11, R1-01 world shape for Ring 1
+
+- **Did:** tile owner values now index `world.parties` (frontier, Ops, town, people) with `partyOf` and `tileOwner` as the one lookup. createWorld places a 7x7 town nearest the map centre: dry, no deposits, water within 6 tiles of every tile, a road cross and a market. Then 6x6 claims for player and rival, 3 tiles clear of the town. Snapshots and the hash carry the format, the parties and the town. The store records `world_format` and renames an older db to `groundwork.format-<N>.db`. `/health` has the town and the Op ids. D-013 was added.
+- **Verified:** verifier PASS R1-01. world.test.ts covers 8 seeds. The server tests cover Ring 0 db migration and /health. Determinism hash 4224adb46ea86fc0 matched in both processes, the smoke passed, and check-fast ran 100 tests.
+- **Learned:** owner values used to be "op index + 1", and apply, scenario, the determinism test and the client all assumed that. Going through partyIndex removed the assumption. A determinism test that picks "an owned tile" has to pick an Op tile now, because town tiles are owned too. Close the sqlite handle before renaming a WAL db, so the -wal file is checkpointed.
+- **Next:** R1-02 named people.

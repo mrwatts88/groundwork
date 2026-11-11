@@ -355,7 +355,9 @@
         "GET /health includes the town name and the list of Op ids (server test)",
         "make check-fast is green"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-01. world.test.ts: one town per seed on 8 seeds (connected dry block, water within 6, built connected roads, market beside a road, no claim overlap); player and rival with 6x6 dry claims and equal cash; tileOwner/partyOf resolve every owner to frontier, op, town or person; snapshot round-trips town and parties, and the hash covers them. 10000-tick determinism passes, and pnpm test:slow prints hash=4224adb46ea86fc0 in both processes, smoke 2/2. server.test.ts: a Ring 0 db is kept byte-identical as groundwork.format-1.db, a fresh Ring 1 world starts, store.format()==2, no second archive on restart, and the .2 suffix avoids overwriting. GET /health returns town name and ops [player, rival]. make check-fast: 100 tests ok. No Math.random/Date in sim. D-013 added.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-02",
