@@ -380,7 +380,9 @@
         "a test shows people travel in the snapshot and the welcome state, and changing one person's parcel changes the state hash",
         "the determinism tests and pnpm test:slow still match across two processes"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-02. people.test.ts: 6 named people with name, job, town home off roads, traits from PERSONALITY_TRAITS, asking 80..180, each a person party after the town, over 8 seeds. Same seed same people, different seeds different names. 3 landowners, 48 tiles outside town, one parcel within 10 tiles (Manhattan) of a deposit, 64x64 also. People in snapshot, JSON round-trip, hash. Parcel change changes hash. server.test welcome.state.people has 6 matching game world. check-fast 121 tests ok. test:slow determinism hash=6e80b98b432ae1ab in both processes, Playwright smoke 2/2. No Math.random or Date in sim. D-014 added. docs/dev.md updated (f6352c6).",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-03",

@@ -4,9 +4,9 @@ Rewritten at the end of every session. Under 40 lines.
 **Ring:** 1, first playable. Planned: R1-01 to R1-20, then R1-review.
 **What Matt can play now:** open `http://laptop.local:7400`
 (`http://laptop-ts:7400` away from home), pan, zoom, press Home and lay roads
-with R. The world is a fresh Ring 1 one: a town with roads (light border) and a
-rival's claim (red border). The Ring 0 db is kept as groundwork.format-1.db.
-There is no economy yet.
+with R. The town has a light border, the rival's claim a red one, and three
+parcels owned by named people a light blue one. Clicking a tile names its
+owner. Older worlds are kept as groundwork.format-<N>.db. No economy yet.
 **At the end of Ring 1 Matt will be able to:** run the ore loop (stake, roads,
 depot, harvester, truck, sell to a growing town) against a Mind-led rival,
 chat with six named people and buy land in chat, on 40 attention a day.
@@ -15,15 +15,14 @@ chat with six named people and buy land in chat, on 40 attention a day.
 client), strict TypeScript, Vitest. `make check-fast` runs plan lint,
 typecheck and unit tests. `make check` adds determinism and the Playwright
 smoke. The sim has `apply(world, command)` with `place_road` only. Tile
-owners index a party list (frontier, Ops, town, people) through `partyOf` and
-`tileOwner`. createWorld places one town with roads and a market, plus 6x6
-claims for player and rival (D-013). The server
+owners index a party list (frontier, Ops, town, people) via `partyOf`. The
+world has one town with roads and a market, 6x6 claims for player and rival
+(D-013), and 6 named people with homes, jobs, traits and asking factors, three
+owning a 4x4 parcel, one near a deposit (D-014). WORLD_FORMAT is 3. The server
 runs the clock, SQLite snapshots and the command log, and resumes exactly.
-Minds have fake and `claude -p` backends and a governor. Nothing schedules
-them yet. The store records WORLD_FORMAT and archives an older db. `/health`
-has the town name and the Op ids. The service runs on the Fedora box on port
-7400.
-**Next (agent):** R1-02, named people (six per town, three landowners).
+Minds have fake and `claude -p` backends and a governor, not yet scheduled.
+`/health` has the town name and the Op ids. Service: Fedora box, port 7400.
+**Next (agent):** R1-03, client town, land overlay and inspector panel.
 **Waiting on Matt:** R0-look. Open the world, place a few roads, and add notes
 on the look to plan/PLAYTEST.md. It blocks nothing.
 **In progress, blocked:** nothing.

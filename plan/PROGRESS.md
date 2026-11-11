@@ -118,3 +118,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R1-01. world.test.ts covers 8 seeds. The server tests cover Ring 0 db migration and /health. Determinism hash 4224adb46ea86fc0 matched in both processes, the smoke passed, and check-fast ran 100 tests.
 - **Learned:** owner values used to be "op index + 1", and apply, scenario, the determinism test and the client all assumed that. Going through partyIndex removed the assumption. A determinism test that picks "an owned tile" has to pick an Op tile now, because town tiles are owned too. Close the sqlite handle before renaming a WAL db, so the -wal file is checkpointed.
 - **Next:** R1-02 named people.
+
+## 2026-11-11, R1-02 named people
+
+- **Did:** `packages/sim/src/people.ts` gives the town 6 named people from the world RNG, each a person party after the town, with a name, a job, a home on a town tile off the roads, two traits from a fixed list of 12 and an asking factor of 80 to 180 percent. The first three own a 4x4 dry parcel kept 3 tiles clear of the town, the first within 10 tiles of a deposit. People travel in the snapshot, the welcome state and the hash. The client names a person's land on click and draws it with a light blue border. WORLD_FORMAT is 3. D-014 was added.
+- **Verified:** verifier PASS R1-02 on the second run. The first run failed only on the docs rule: the new border and owner names had no player-facing line in docs/dev.md. people.test.ts covers 8 seeds and the 64x64 map. Determinism hash 6e80b98b432ae1ab matched in both processes, the smoke passed 2 of 2, and check-fast ran 121 tests.
+- **Learned:** people are placed after the Op claims, so the claims draw from the RNG in the same order as before and keep their spots. Any change a player can see (a border colour, HUD text) needs its line in docs/dev.md in the same item, or the verifier fails it.
+- **Next:** R1-03 client town, land overlay and inspector panel.
