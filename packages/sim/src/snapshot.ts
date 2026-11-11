@@ -2,6 +2,7 @@
 // client (DESIGN.md 11.2). Pure: no I/O here, the server does the storing.
 
 import type { PersonState, WorldSnapshot } from "@groundwork/protocol";
+import { ATTENTION_PER_DAY } from "./attention.ts";
 import { WORLD_FORMAT, type Person, type World } from "./world.ts";
 
 function copyPerson(p: PersonState): Person {
@@ -20,7 +21,7 @@ export function toSnapshot(world: World): WorldSnapshot {
     richness: Array.from(world.richness),
     owner: Array.from(world.owner),
     road: Array.from(world.road),
-    ops: world.ops.map((op) => ({ id: op.id, cash: op.cash })),
+    ops: world.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention })),
     builds: world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     parties: world.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: world.town.id, name: world.town.name, market: world.town.market },
@@ -59,7 +60,8 @@ export function fromSnapshot(s: WorldSnapshot): World {
     richness: Uint8Array.from(s.richness),
     owner: Uint16Array.from(s.owner),
     road: Uint8Array.from(s.road),
-    ops: s.ops.map((op) => ({ id: op.id, cash: op.cash })),
+    // Format 3 saves from before attention existed load with a full day's budget.
+    ops: s.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention ?? ATTENTION_PER_DAY })),
     builds: s.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     parties: s.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: s.town.id, name: s.town.name, market: s.town.market },

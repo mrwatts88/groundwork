@@ -119,6 +119,11 @@ test("map, HUD, pan and zoom, and placing a road", async ({ page }) => {
   const before = await page.screenshot({ clip });
   await page.screenshot({ path: join(SHOT_DIR, "2-before-road.png") });
 
+  // Attention in the HUD, before the road. A fresh world starts the day at 40.
+  const attention = page.locator("#hud-attention");
+  await expect(attention).toHaveText(/^\d+\/40$/);
+  const attentionBefore = Number((await attention.textContent())!.split("/")[0]);
+
   await page.locator("#tool-road").click();
   await expect(page.locator("#tool-road")).toHaveAttribute("aria-pressed", "true");
   await page.mouse.click(at.x, at.y);
@@ -130,6 +135,8 @@ test("map, HUD, pan and zoom, and placing a road", async ({ page }) => {
     },
     target,
   );
+  // The road cost 1 attention, and the HUD shows it.
+  await expect(attention).toHaveText(`${attentionBefore - 1}/40`);
   await page.mouse.move(1100, 700);
   await frames(page);
   const after = await page.screenshot({ clip });
@@ -141,6 +148,7 @@ test("map, HUD, pan and zoom, and placing a road", async ({ page }) => {
   const i = target.y * state.width + target.x;
   expect(state.road[i]).not.toBe(ROAD_NONE);
   expect(state.ops.find((op) => op.id === "player")!.cash).toBeLessThan(10_000);
+  expect(state.ops.find((op) => op.id === "player")!.attention).toBe(attentionBefore - 1);
 });
 
 test("the server serves the client and the socket on one port", async ({ request }) => {

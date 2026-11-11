@@ -43,6 +43,17 @@ export interface PlaceRoad {
 /** Every command any actor can issue. The one command API takes these (DESIGN.md 12.2). */
 export type Command = PlaceRoad;
 
+export type CommandType = Command["type"];
+
+/**
+ * Every command type, at runtime. The sim's attention cost table is checked
+ * against this list, and the line below fails to compile if a type is missing.
+ */
+export const COMMAND_TYPES = ["place_road"] as const satisfies readonly CommandType[];
+type MissingCommandType = Exclude<CommandType, (typeof COMMAND_TYPES)[number]>;
+const allCommandTypesListed: [MissingCommandType] extends [never] ? true : never = true;
+void allCommandTypesListed;
+
 /** A command as recorded in the command log, stamped with the tick it applies at. */
 export interface LoggedCommand {
   readonly tick: number;
@@ -55,7 +66,8 @@ export type CommandErrorCode =
   | "on_water"
   | "not_owner"
   | "already_road"
-  | "insufficient_cash";
+  | "insufficient_cash"
+  | "insufficient_attention";
 
 export interface CommandError {
   readonly code: CommandErrorCode;
@@ -71,6 +83,17 @@ export type CommandResult =
 
 export const TICKS_PER_HOUR = 60;
 export const TICKS_PER_DAY = 24 * TICKS_PER_HOUR;
+
+/**
+ * Attention points every Op starts each game day with (DESIGN.md 6.2, D-015).
+ * Here so the client can show N/40. What each command costs lives in the sim.
+ */
+export const ATTENTION_PER_DAY = 40;
+
+/** Attention as the HUD shows it: left today over the daily budget. */
+export function formatAttention(left: number | undefined): string {
+  return left === undefined ? "-" : `${left}/${ATTENTION_PER_DAY}`;
+}
 
 export interface GameDate {
   readonly day: number;
@@ -107,6 +130,8 @@ export interface ClockStatus {
 export interface OpState {
   readonly id: OpId;
   readonly cash: number;
+  /** Attention points left today (DESIGN.md 6.2). Refilled at each day boundary. */
+  readonly attention: number;
 }
 
 /**

@@ -21,8 +21,8 @@ function snapshot(): WorldSnapshot {
     owner,
     road: new Array<number>(16).fill(0),
     ops: [
-      { id: "player", cash: 10_000 },
-      { id: "rival", cash: 5_000 },
+      { id: "player", cash: 10_000, attention: 40 },
+      { id: "rival", cash: 5_000, attention: 40 },
     ],
     builds: [],
     parties: [
@@ -42,6 +42,7 @@ describe("ClientWorld", () => {
     const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 });
     expect(w.playerOwner()).toBe(1);
     expect(w.playerCash()).toBe(10_000);
+    expect(w.playerAttention()).toBe(40);
     expect(w.playerHome()).toEqual({ x: 1.5, y: 1.5 });
   });
 
@@ -79,7 +80,7 @@ describe("ClientWorld", () => {
       11,
       "Day 1, 00:11",
       { mode: "speedup", rate: 4, speed: 4 },
-      { owner: [], road: [[5, ROAD_BUILDING]], ops: [{ id: "player", cash: 9_990 }, { id: "rival", cash: 5_000 }], builds: [] },
+      { owner: [], road: [[5, ROAD_BUILDING]], ops: [{ id: "player", cash: 9_990, attention: 39 }, { id: "rival", cash: 5_000, attention: 40 }], builds: [] },
     );
     expect(changed).toEqual([5]);
     expect(w.road[5]).toBe(ROAD_BUILDING);

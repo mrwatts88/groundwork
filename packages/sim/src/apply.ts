@@ -9,6 +9,7 @@ import {
   type CommandResult,
   type PlaceRoad,
 } from "@groundwork/protocol";
+import { attentionCost } from "./attention.ts";
 import { inBounds, opIndex, partyIndex, ROAD_BUILDING, ROAD_NONE, tileIndex, type World } from "./world.ts";
 
 /** Road cost by terrain, in whole currency units. */
@@ -45,9 +46,24 @@ function placeRoad(world: World, cmd: PlaceRoad): CommandResult {
   return { ok: true };
 }
 
-export function apply(world: World, command: Command): CommandResult {
+function dispatch(world: World, command: Command): CommandResult {
   switch (command.type) {
     case "place_road":
       return placeRoad(world, command);
   }
+}
+
+export function apply(world: World, command: Command): CommandResult {
+  const cost = attentionCost(command.type);
+  const op = world.ops[opIndex(world, command.op)];
+  if (op !== undefined && op.attention < cost) {
+    return reject(
+      "insufficient_attention",
+      `${command.op} has ${op.attention} attention left today, ${command.type} costs ${cost}`,
+    );
+  }
+  const result = dispatch(world, command);
+  // Handlers validate in full before changing anything, so only a success is charged.
+  if (result.ok && op !== undefined) op.attention -= cost;
+  return result;
 }

@@ -7,6 +7,13 @@ export const PACKAGE: PackageName = "sim";
 
 export const SIM_PROTOCOL_VERSION: number = PROTOCOL_VERSION;
 
+export {
+  ATTENTION_COST,
+  ATTENTION_PER_DAY,
+  attentionCost,
+  refillAttention,
+  type PlannedCommandType,
+} from "./attention.ts";
 export { apply, ROAD_BUILD_TICKS, ROAD_COST } from "./apply.ts";
 export { hashWorld } from "./hash.ts";
 export {

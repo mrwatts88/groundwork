@@ -5,6 +5,7 @@
 // Integer math only, so every platform agrees.
 
 import { TERRAIN, type OpId, type Party } from "@groundwork/protocol";
+import { ATTENTION_PER_DAY } from "./attention.ts";
 import { placePeople } from "./people.ts";
 import { createRng, nextInt, type Rng } from "./rng.ts";
 import { NO_OWNER, ROAD_BUILT, type Op, type World } from "./world.ts";
@@ -221,7 +222,7 @@ export function createWorld(options: WorldOptions): World {
   const moisture = noise(rng, width, height);
   const terrain = new Uint8Array(width * height);
   for (let i = 0; i < terrain.length; i++) terrain[i] = terrainFor(elevation[i]!, moisture[i]!);
-  const ops: Op[] = options.ops.map((id) => ({ id, cash: STARTING_CASH }));
+  const ops: Op[] = options.ops.map((id) => ({ id, cash: STARTING_CASH, attention: ATTENTION_PER_DAY }));
   const parties: Party[] = [
     { kind: "frontier", id: "frontier" },
     ...ops.map((op): Party => ({ kind: "op", id: op.id })),

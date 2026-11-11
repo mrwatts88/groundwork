@@ -8,6 +8,8 @@ export interface Op {
   readonly id: OpId;
   /** Whole currency units. Money is integer (DESIGN.md 12.3). */
   cash: number;
+  /** Attention points left today (DESIGN.md 6.2). */
+  attention: number;
 }
 
 /** A road tile under construction. */

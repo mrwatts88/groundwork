@@ -2,7 +2,7 @@
 // (DESIGN.md 15). The client only sends commands. The server decides.
 
 import { Application } from "pixi.js";
-import { TERRAIN, type ServerMessage } from "@groundwork/protocol";
+import { formatAttention, TERRAIN, type ServerMessage } from "@groundwork/protocol";
 import { Camera, tileCenter } from "./iso.ts";
 import { Link, socketUrl, type LinkStatus } from "./net.ts";
 import type { ClientDebug, Mode } from "./debug.ts";
@@ -28,6 +28,7 @@ async function main(): Promise<void> {
   const hudDate = el("hud-date");
   const hudSpeed = el("hud-speed");
   const hudCash = el("hud-cash");
+  const hudAttention = el("hud-attention");
   const hudMessage = el("hud-message");
   const hudConn = el("hud-conn");
   const roadButton = el<HTMLButtonElement>("tool-road");
@@ -74,6 +75,7 @@ async function main(): Promise<void> {
     hudSpeed.textContent = formatClock(world.clock);
     const cash = world.playerCash();
     hudCash.textContent = cash === undefined ? "-" : `$${cash.toLocaleString("en-US")}`;
+    hudAttention.textContent = formatAttention(world.playerAttention());
     for (const b of speedButtons) {
       const on = world.clock.mode !== "away" && Number(b.dataset["speed"]) === world.clock.speed;
       b.setAttribute("aria-pressed", String(on));

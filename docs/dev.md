@@ -199,7 +199,8 @@ on your land, `T` centres on the town, `O` toggles the ownership overlay, `R`
 or the Road button toggles road mode, Esc leaves it and closes the
 inspector. In road mode a click orders a road on that tile. Outside road mode a click shows what
 the tile is in the HUD. The HUD shows the game date, the clock (speed and
-mode), speed buttons and cash.
+mode), speed buttons, cash and attention left today as N/40
+(`#hud-attention`).
 
 For live reload while working on the client, run the server on 8787 and
 `pnpm --filter @groundwork/client dev`. Vite proxies `/ws` and `/health` to it.
@@ -215,7 +216,7 @@ poking at in the console.
 that serves the built client. It checks the HUD date and clock speed, zooms
 and pans, saves `test-results/smoke/1-map.png`, places a road on the
 player's land with a click and checks it on screen (`3-road.png`) and on the
-server. A second test presses T and saves the town (`4-town.png`), saves the
+server, and that `#hud-attention` drops by 1. A second test presses T and saves the town (`4-town.png`), saves the
 whole map with the ownership overlay off and on (`5-overlay-off.png`,
 `6-overlay-on.png`), then clicks a town tile, the market, a person's tile, a
 deposit, a rival tile and one of yours and reads `#inspector` from the DOM
@@ -248,3 +249,21 @@ call `fake.record(request, reply)` or pass `recordings` keyed by
 
 How to add a building, a good, a command and an agent type is written here as
 each of those systems lands.
+
+### A command
+
+1. Add its type to `Command` and its name to `COMMAND_TYPES` in
+   `packages/protocol/src/index.ts` (typecheck fails until both match), and
+   a case to `parseCommand`.
+2. Give it a cost in `ATTENTION_COST` in `packages/sim/src/attention.ts`.
+   Routine automation costs 0. The table's type and
+   `attention.test.ts` both fail without an entry.
+3. Add its handler to `dispatch` in `packages/sim/src/apply.ts`. Validate in
+   full before changing anything. `apply()` checks and charges attention for
+   every command, and charges only on success.
+
+### Attention
+
+Each Op has `attention`, refilled to `ATTENTION_PER_DAY` (40, in protocol)
+by `tick()` at every day boundary (`refillAttention`). A command that costs
+more than the Op has left is rejected with `insufficient_attention`.

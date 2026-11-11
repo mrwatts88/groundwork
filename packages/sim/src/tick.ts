@@ -1,5 +1,6 @@
 // One sim tick is one game minute (DESIGN.md 11.1).
 
+import { refillAttention } from "./attention.ts";
 import { ROAD_BUILT, type World } from "./world.ts";
 
 export function tick(world: World): void {
@@ -14,4 +15,5 @@ export function tick(world: World): void {
   }
   world.builds.length = kept;
   world.tick += 1;
+  refillAttention(world);
 }

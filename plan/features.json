@@ -431,7 +431,7 @@
         "the HUD shows attention left as N/40 in #hud-attention, and the Playwright smoke reads it before and after placing a road",
         "the chosen costs are recorded as a decision in DESIGN.md section 24 (open question 21)"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R1-05",

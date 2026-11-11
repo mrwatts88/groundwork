@@ -56,6 +56,7 @@ export function hashWorld(world: World): string {
   for (const op of world.ops) {
     h.str(op.id);
     h.int(op.cash);
+    h.int(op.attention);
   }
   h.u32(world.builds.length);
   for (const build of world.builds) {

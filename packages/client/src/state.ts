@@ -156,6 +156,11 @@ export class ClientWorld {
     return this.ops.find((op) => op.id === PLAYER_OP)?.cash;
   }
 
+  /** Attention the player has left today. */
+  playerAttention(): number | undefined {
+    return this.ops.find((op) => op.id === PLAYER_OP)?.attention;
+  }
+
   /** The middle of the player's land, in tiles. Falls back to the map centre. */
   playerHome(): { x: number; y: number } {
     return this.centreOf(this.playerOwner());

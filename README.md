@@ -26,6 +26,12 @@ people. Press O again to turn it off. Click any tile to open the inspector
 on the right. It shows the terrain, the owner by name and, on a deposit, how
 rich it is. Esc closes it.
 
+Attention in the HUD is how much you can still do today, shown as N/40.
+Every operation, yours and the rival's, gets 40 points at the start of each
+game day. Laying a road costs 1. Points you do not use are gone at the next
+day, so they do not pile up. When you run out, a road is refused until the
+day turns.
+
 ## Run locally
 
 You need Node 22 or newer and pnpm 10.
