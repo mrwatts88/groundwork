@@ -25,19 +25,15 @@ world has one town with roads and a market, 6x6 claims for player and rival
 owning a 4x4 parcel, one near a deposit (D-014). WORLD_FORMAT is 3. The server
 runs the clock, SQLite snapshots and the command log, and resumes exactly.
 Minds have fake and `claude -p` backends and a governor, not yet scheduled.
-`/health` has the town and Op ids. The client has an inspector, an ownership
-overlay and town buildings. The rival's name is config (`GROUNDWORK_RIVAL_NAME`),
-sent in `welcome` as `opNames`. Service: Fedora box, port 7400.
+Rival name is config, sent in `welcome` as `opNames`. Fedora box, port 7400.
 **Next (agent):** R1-06 the depot, then R1-07. **Blocked:** nothing.
 **Waiting on Matt:** R0-look. Open the world and add notes to plan/PLAYTEST.md.
 **Notes for the next session:** the Ring 1 rules are DESIGN.md 23.2 done-when
-and decision D-012. Plan order is build order. Development is on the Mac. On
-the Fedora box, `claude` and `pnpm` live in `~/.local/bin`, off the
-non-interactive PATH, so use absolute paths. Packages export `src/index.ts`
+and decision D-012. Plan order is build order. On the Fedora box, `claude`
+and `pnpm` live in `~/.local/bin`, off the non-interactive PATH. Packages export `src/index.ts`
 and imports inside a package use the `.ts` extension. The server runs TS with
 `node --experimental-strip-types`, so no enums or parameter properties.
-Sim tests typecheck under `packages/sim/tsconfig.test.json`, client e2e under
-`packages/client/tsconfig.node.json`. shellcheck runs only on the Fedora box.
+shellcheck runs only on the Fedora box.
 New party kinds go at the end of `world.parties`, since owner values index it.
 Bump WORLD_FORMAT when an old save can no longer load. A new command needs
 `COMMAND_TYPES` and an `ATTENTION_COST` entry (docs/dev.md "A command").
