@@ -61,3 +61,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-07. 81 tests pass with claude off the PATH. No test spawns claude. check-fast is green.
 - **Learned:** on the Mac, `claude` sits in the nvm node bin dir next to `node`, so "claude off the PATH" needs a scratch bin dir with only node and pnpm symlinked. Avoid TS parameter properties in packages the server imports, because `--experimental-strip-types` cannot erase them. Push pending R0-02.
 - **Next:** nothing agent-actionable until Matt does R0-02.
+
+## 2026-11-11, R0-02 publish the repo
+
+- **Did:** scanned the full history before the first push, created the public repo mrwatts88/groundwork with `gh repo create --public --source . --push`, and pushed main. Added D-011: Matt keeps his personal email as commit author and committer in the public history.
+- **Verified:** verifier PASS R0-02 on the third run. Visibility PUBLIC, HEAD equals origin main, clean tree. No keys or tokens anywhere, no email in file content. The first two runs failed on the email in commit metadata: first because no decision recorded it, then because the verifier could not see Matt's consent. Quoting his question-dialog answers word for word cleared it.
+- **Learned:** the autopilot permission classifier blocks creating a public repo even with an approved human item, so any public step needs Matt at the keyboard. Record an exception to an acceptance check as a DESIGN.md decision before the action, and hand the verifier the human's exact words, or it fails the item.
+- **Next:** R0-08 Fedora box prep.

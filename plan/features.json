@@ -37,7 +37,9 @@
         "git rev-parse HEAD equals git ls-remote origin main",
         "git status is clean"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-02. gh repo view visibility PUBLIC. History scan of all commits: 0 key or token matches, no credentials, no email in any file content, no risky files. The author and committer email in commit metadata is accepted by D-011, which Matt confirmed in session. HEAD a32a7ca equals git ls-remote origin main. git status clean. Two earlier verifier FAILs were on the email before D-011 was recorded and confirmed.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-03",

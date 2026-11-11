@@ -5,7 +5,8 @@ Rewritten at the end of every session. Under 40 lines.
 **Ring:** 0, foundation.
 
 **Works now:** the design (DESIGN.md) and the build process (PROCESS.md,
-skills, hooks, plan) are in place. The repo is local on the Mac. A pnpm
+skills, hooks, plan) are in place. The repo is public at
+https://github.com/mrwatts88/groundwork and `main` is pushed (R0-02). A pnpm
 workspace with five packages (protocol, sim, minds, server, client), strict
 TypeScript and Vitest is in place. `make check-fast` typechecks every package
 and runs the unit tests. The sim core is in (R0-04): a seeded 128x128
@@ -24,10 +25,9 @@ backend, a `claude -p` backend, schema-checked replies, a budget governor
 
 **In progress:** nothing.
 
-**Next (agent):** none actionable until R0-02 lands. Then whatever `plan.py next` lists.
+**Next (agent):** R0-08 Fedora box prep, then whatever `plan.py next` lists.
 
-**Waiting on Matt:** R0-02 publish the public repo. Until it lands there is no
-`origin` remote and nothing has been pushed. Commits from R0-03 on are local.
+**Waiting on Matt:** nothing. R0-look comes after R0-review.
 
 **Blocked:** nothing.
 
