@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { WorldSnapshot } from "@groundwork/protocol";
+import type { WorldDelta, WorldSnapshot } from "@groundwork/protocol";
 import { ClientWorld, formatClock, ROAD_BUILDING } from "./state.ts";
 
 function snapshot(): WorldSnapshot {
@@ -26,6 +26,7 @@ function snapshot(): WorldSnapshot {
     ],
     builds: [],
     surveys: [],
+    buildings: [],
     parties: [
       { kind: "frontier", id: "frontier" },
       { kind: "op", id: "player" },
@@ -81,7 +82,7 @@ describe("ClientWorld", () => {
       11,
       "Day 1, 00:11",
       { mode: "speedup", rate: 4, speed: 4 },
-      { owner: [], road: [[5, ROAD_BUILDING]], ops: [{ id: "player", cash: 9_990, attention: 39 }, { id: "rival", cash: 5_000, attention: 40 }], builds: [], surveys: [] },
+      { owner: [], road: [[5, ROAD_BUILDING]], ops: [{ id: "player", cash: 9_990, attention: 39 }, { id: "rival", cash: 5_000, attention: 40 }], builds: [], surveys: [], buildings: [] },
     );
     expect(changed).toEqual([5]);
     expect(w.road[5]).toBe(ROAD_BUILDING);
@@ -102,6 +103,7 @@ describe("surveys", () => {
       ops,
       builds: [],
       surveys: [{ tile: 0, op: "player", remaining: 359 }, { tile: 1, op: "rival", remaining: 60 }],
+      buildings: [],
     });
     expect(started.sort()).toEqual([0, 1]);
     expect(w.inspect(0, 0).survey).toBe("You, 5 h 59 min left");
@@ -113,10 +115,32 @@ describe("surveys", () => {
       ops,
       builds: [],
       surveys: [{ tile: 1, op: "rival", remaining: 59 }],
+      buildings: [],
     });
     expect(done).toEqual([0, 0]);
     expect(w.inspect(0, 0).survey).toBeUndefined();
     expect(w.inspect(0, 0).owner).toBe("You");
+  });
+});
+
+describe("buildings", () => {
+  it("reports a depot appearing, finishing and going idle as changed tiles, and describes its state", () => {
+    const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 }, { rival: "Redrock" });
+    const ops = w.ops;
+    const clock = { mode: "present", rate: 1, speed: 1 } as const;
+    const delta = (buildings: WorldDelta["buildings"]): WorldDelta => ({ owner: [], road: [], ops, builds: [], surveys: [], buildings });
+    const depot = { kind: "depot", tile: 6, op: "player" } as const;
+    expect(w.applyDelta(11, "", clock, delta([{ ...depot, remaining: 480, staffed: false }]))).toEqual([6]);
+    expect(w.inspect(2, 1).building).toBe("Your depot, under construction, 8 h left");
+    // Counting down alone does not change the look.
+    expect(w.applyDelta(12, "", clock, delta([{ ...depot, remaining: 479, staffed: false }]))).toEqual([]);
+    expect(w.applyDelta(13, "", clock, delta([{ ...depot, remaining: 0, staffed: true }]))).toEqual([6]);
+    expect(w.inspect(2, 1).building).toBe("Your depot, staffed");
+    expect(w.applyDelta(14, "", clock, delta([{ ...depot, remaining: 0, staffed: false }]))).toEqual([6]);
+    expect(w.inspect(2, 1).building).toBe("Your depot, idle, wages unpaid");
+    w.applyDelta(15, "", clock, delta([{ kind: "depot", tile: 15, op: "rival", remaining: 0, staffed: true }]));
+    expect(w.inspect(3, 3).building).toBe("Redrock's depot, staffed");
+    expect(w.inspect(2, 1).building).toBeUndefined();
   });
 });
 

@@ -5,6 +5,7 @@
 import {
   TERRAIN,
   TERRAIN_NAMES,
+  type BuildingState,
   type ClockStatus,
   type OpId,
   type OpState,
@@ -35,7 +36,7 @@ export interface TileInfo {
   readonly ownerKind: OwnerKind;
   /** Deposit richness, or undefined where there is no deposit. */
   readonly richness: number | undefined;
-  /** A building on the tile, if any: "market" or the home of a named person. */
+  /** A building on the tile, if any: "market", the home of a named person, or an Op's building and its state. */
   readonly building: string | undefined;
   /** Who is surveying the tile and how long is left, or undefined if no one is. */
   readonly survey: string | undefined;
@@ -59,6 +60,8 @@ export class ClientWorld {
   ops: readonly OpState[];
   /** Stakes being surveyed (DESIGN.md 5.3). */
   surveys: readonly SurveyState[];
+  /** Buildings Ops placed (DESIGN.md 6.3). */
+  buildings: readonly BuildingState[];
   /** Display names of other Ops, by id. */
   readonly opNames: Readonly<Record<OpId, string>>;
   /** Owner values index this list. 0 is frontier. */
@@ -78,6 +81,7 @@ export class ClientWorld {
     this.richness = Uint8Array.from(state.richness);
     this.ops = state.ops;
     this.surveys = state.surveys ?? [];
+    this.buildings = state.buildings ?? [];
     this.opNames = opNames;
     this.parties = state.parties;
     this.town = state.town;
@@ -108,6 +112,13 @@ export class ClientWorld {
     for (const t of before) if (!after.has(t)) changed.push(t);
     for (const t of after) if (!before.has(t)) changed.push(t);
     this.surveys = delta.surveys;
+    // A building that appears, finishes or changes staffing changes how its tile looks.
+    const look = (b: BuildingState): string => `${b.kind}:${b.remaining > 0}:${b.staffed}`;
+    const was = new Map(this.buildings.map((b) => [b.tile, look(b)]));
+    const now = new Map(delta.buildings.map((b) => [b.tile, look(b)]));
+    for (const [t, v] of now) if (was.get(t) !== v) changed.push(t);
+    for (const t of was.keys()) if (!now.has(t)) changed.push(t);
+    this.buildings = delta.buildings;
     return changed;
   }
 
@@ -150,6 +161,11 @@ export class ClientWorld {
     return this.surveys.find((s) => s.tile === tile);
   }
 
+  /** The building an Op placed on a tile, if any. */
+  buildingAt(tile: number): BuildingState | undefined {
+    return this.buildings.find((b) => b.tile === tile);
+  }
+
   /** The display name of an Op: You for the player. */
   opName(id: OpId): string {
     return id === PLAYER_OP ? "You" : (this.opNames[id] ?? id);
@@ -166,6 +182,7 @@ export class ClientWorld {
     const terrain = this.terrain[i]!;
     const home = this.homeOf(i);
     const survey = this.surveyAt(i);
+    const built = this.buildingAt(i);
     return {
       x,
       y,
@@ -173,7 +190,14 @@ export class ClientWorld {
       owner: this.ownerName(i),
       ownerKind: this.ownerKind(i),
       richness: terrain === TERRAIN.deposit ? this.richness[i] : undefined,
-      building: i === this.town.market ? "market" : home !== undefined ? `home of ${home.name}` : undefined,
+      building:
+        i === this.town.market
+          ? "market"
+          : home !== undefined
+            ? `home of ${home.name}`
+            : built !== undefined
+              ? describeBuilding(built, this.opName(built.op))
+              : undefined,
       survey:
         survey === undefined ? undefined : `${this.opName(survey.op)}, ${formatMinutes(survey.remaining)} left`,
     };
@@ -215,6 +239,13 @@ export class ClientWorld {
     if (n === 0) return { x: this.width / 2, y: this.height / 2 };
     return { x: sx / n, y: sy / n };
   }
+}
+
+/** An Op's building in words: whose, what, and whether it is being built, working or idle. */
+export function describeBuilding(b: BuildingState, owner: string): string {
+  const whose = owner === "You" ? "Your" : `${owner}'s`;
+  if (b.remaining > 0) return `${whose} ${b.kind}, under construction, ${formatMinutes(b.remaining)} left`;
+  return b.staffed ? `${whose} ${b.kind}, staffed` : `${whose} ${b.kind}, idle, wages unpaid`;
 }
 
 /** One line for the HUD: speed and clock mode. */

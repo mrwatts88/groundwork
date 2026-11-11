@@ -13,6 +13,7 @@ import { ClientWorld, formatClock, PLAYER_OP, ROAD_NONE, type TileInfo } from ".
 const TOOLS: readonly { readonly id: string; readonly mode: Exclude<Mode, "inspect"> }[] = [
   { id: "tool-road", mode: "road" },
   { id: "tool-stake", mode: "stake" },
+  { id: "tool-depot", mode: "depot" },
 ];
 
 function el<T extends HTMLElement>(id: string): T {
@@ -97,6 +98,12 @@ async function main(): Promise<void> {
     const owner = world.owner[i]!;
     if (mode === "road") return (owner === 0 || owner === world.playerOwner()) && world.road[i] === ROAD_NONE;
     if (mode === "stake") return owner === 0 && world.surveyAt(i) === undefined;
+    if (mode === "depot") {
+      const w = world;
+      if (owner !== w.playerOwner() || w.road[i] !== ROAD_NONE || w.buildingAt(i) !== undefined) return false;
+      const sides = [[t.x + 1, t.y], [t.x - 1, t.y], [t.x, t.y + 1], [t.x, t.y - 1]] as const;
+      return sides.some(([x, y]) => w.inBounds(x, y) && w.road[w.index(x, y)] !== ROAD_NONE);
+    }
     return true;
   };
 
@@ -208,6 +215,11 @@ async function main(): Promise<void> {
       say(result.ok ? `Claim staked at (${t.x}, ${t.y}). Surveying.` : result.error.message);
       return;
     }
+    if (mode === "depot") {
+      const result = await link.command({ type: "place_building", op: PLAYER_OP, kind: "depot", x: t.x, y: t.y });
+      say(result.ok ? `Depot ordered at (${t.x}, ${t.y}). Under construction.` : result.error.message);
+      return;
+    }
     selected = t;
     renderer?.setSelected(t);
     const info = world.inspect(t.x, t.y);
@@ -296,6 +308,9 @@ async function main(): Promise<void> {
         break;
       case "c":
         toggleTool("stake");
+        break;
+      case "b":
+        toggleTool("depot");
         break;
       case "Escape":
         setMode("inspect");

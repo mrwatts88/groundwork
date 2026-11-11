@@ -69,6 +69,14 @@ export function hashWorld(world: World): string {
     h.str(survey.op);
     h.int(survey.remaining);
   }
+  h.u32(world.buildings.length);
+  for (const b of world.buildings) {
+    h.str(b.kind);
+    h.u32(b.tile);
+    h.str(b.op);
+    h.int(b.remaining);
+    h.u32(b.staffed ? 1 : 0);
+  }
   h.u32(world.parties.length);
   for (const party of world.parties) {
     h.str(party.kind);

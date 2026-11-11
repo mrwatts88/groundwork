@@ -1,9 +1,13 @@
 // World <-> plain data, for SQLite snapshots and the initial state sent to a
 // client (DESIGN.md 11.2). Pure: no I/O here, the server does the storing.
 
-import type { PersonState, WorldSnapshot } from "@groundwork/protocol";
+import type { BuildingState, PersonState, WorldSnapshot } from "@groundwork/protocol";
 import { ATTENTION_PER_DAY } from "./attention.ts";
-import { WORLD_FORMAT, type Person, type World } from "./world.ts";
+import { WORLD_FORMAT, type Building, type Person, type World } from "./world.ts";
+
+function copyBuilding(b: BuildingState): Building {
+  return { kind: b.kind, tile: b.tile, op: b.op, remaining: b.remaining, staffed: b.staffed };
+}
 
 function copyPerson(p: PersonState): Person {
   return { id: p.id, name: p.name, job: p.job, home: p.home, traits: [...p.traits], asking: p.asking };
@@ -24,6 +28,7 @@ export function toSnapshot(world: World): WorldSnapshot {
     ops: world.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention })),
     builds: world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     surveys: world.surveys.map((s) => ({ tile: s.tile, op: s.op, remaining: s.remaining })),
+    buildings: world.buildings.map(copyBuilding),
     parties: world.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: world.town.id, name: world.town.name, market: world.town.market },
     people: world.people.map(copyPerson),
@@ -66,6 +71,8 @@ export function fromSnapshot(s: WorldSnapshot): World {
     builds: s.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     // Format 3 saves from before staking have no surveys.
     surveys: (s.surveys ?? []).map((v) => ({ tile: v.tile, op: v.op, remaining: v.remaining })),
+    // Format 3 saves from before buildings have none.
+    buildings: (s.buildings ?? []).map(copyBuilding),
     parties: s.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: s.town.id, name: s.town.name, market: s.town.market },
     people: s.people.map(copyPerson),

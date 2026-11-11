@@ -19,6 +19,18 @@ describe("parseClientMessage", () => {
     });
   });
 
+  it("accepts a place_building command for a known kind and refuses an unknown one", () => {
+    const command = { type: "place_building", op: "player", kind: "depot", x: 3, y: 4 };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 2, command }))).toEqual({
+      ok: true,
+      value: { type: "command", id: 2, command },
+    });
+    const castle = { ...command, kind: "castle" };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 3, command: castle })).ok).toBe(false);
+    const noKind = { type: "place_building", op: "player", x: 3, y: 4 };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 4, command: noKind })).ok).toBe(false);
+  });
+
   it("accepts set_speed", () => {
     expect(parseClientMessage('{"type":"set_speed","speed":4}')).toEqual({
       ok: true,

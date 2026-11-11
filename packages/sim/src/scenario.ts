@@ -1,6 +1,6 @@
 // A scripted world and command log for determinism tests and the hash CLI
-// (DESIGN.md 17). The log mixes valid roads and stakes with commands the sim
-// must reject.
+// (DESIGN.md 17). The log mixes valid roads, stakes and depots with commands
+// the sim must reject.
 
 import { TERRAIN, type LoggedCommand } from "@groundwork/protocol";
 import { createWorld } from "./mapgen.ts";
@@ -17,6 +17,16 @@ export function scenarioWorld(seed: number = SCENARIO_SEED): World {
 }
 
 /** A command log derived only from the starting world, sorted by tick. */
+/** The skip-th dry tile a party owns whose right neighbour it also owns, or -1. */
+function firstOwnedPair(world: World, party: number, skip: number): number {
+  const ok = (i: number) => world.owner[i] === party && world.terrain[i] !== TERRAIN.water;
+  for (let i = 0; i + 1 < world.terrain.length; i++) {
+    if ((i + 1) % world.width === 0 || !ok(i) || !ok(i + 1)) continue;
+    if (skip-- === 0) return i;
+  }
+  return -1;
+}
+
 export function scenarioLog(world: World, ticks: number = SCENARIO_TICKS): LoggedCommand[] {
   const rng = createRng(world.seed ^ 0x5eed);
   const log: LoggedCommand[] = [];
@@ -35,6 +45,22 @@ export function scenarioLog(world: World, ticks: number = SCENARIO_TICKS): Logge
       // The other op tries the same parcel and is refused.
       const other = world.ops[(k + 1) % world.ops.length]!.id;
       log.push({ tick: nextInt(rng, ticks), command: { type: "place_road", op: other, x, y } });
+      // Some tiles get a depot. It lands only if the tile is still free of a
+      // road and one is laid beside it first, so many are refused.
+      if (nextInt(rng, 6) === 0) {
+        log.push({ tick: nextInt(rng, ticks), command: { type: "place_building", op, kind: "depot", x, y } });
+      }
+    }
+    // Early on, a road and a depot beside it, so depots are built, staffed
+    // and pay wages over the run.
+    for (let n = 0; n < 3; n++) {
+      const t = nextInt(rng, ticks / 4);
+      const at = firstOwnedPair(world, party, n * 7);
+      if (at < 0) break;
+      const x = at % world.width;
+      const y = Math.floor(at / world.width);
+      log.push({ tick: t, command: { type: "place_road", op, x: x + 1, y } });
+      log.push({ tick: t, command: { type: "place_building", op, kind: "depot", x, y } });
     }
     log.push({ tick: nextInt(rng, ticks), command: { type: "place_road", op, x: -1, y: 0 } });
     log.push({ tick: nextInt(rng, ticks), command: { type: "place_road", op, x: world.width, y: 3 } });

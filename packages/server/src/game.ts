@@ -74,6 +74,13 @@ export class Game {
       ops: this.world.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention })),
       builds: this.world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
       surveys: this.world.surveys.map((s) => ({ tile: s.tile, op: s.op, remaining: s.remaining })),
+      buildings: this.world.buildings.map((b) => ({
+        kind: b.kind,
+        tile: b.tile,
+        op: b.op,
+        remaining: b.remaining,
+        staffed: b.staffed,
+      })),
     };
   }
 }

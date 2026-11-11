@@ -486,7 +486,7 @@
         "#sidebar has a Depot tool. The Playwright smoke places a depot next to a road and saves screenshots of it under construction and built, with its own silhouette (verifier opens them), and #inspector shows its state",
         "README How to play says how to build a depot and what it costs to run"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R1-07",

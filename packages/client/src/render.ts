@@ -42,6 +42,11 @@ const MARKET_AWNING = 0x2f8f83;
 const MARKET_STRIPE = 0xf6f1e0;
 const MARKET_FLAG = 0xf0b429;
 const SURVEY_POST = 0x5a3b1e;
+const DEPOT_WALL = 0x8a9bb0;
+const DEPOT_ROOF = 0x55616f;
+const DEPOT_DOOR_OPEN = 0xf2d16b;
+const DEPOT_DOOR_SHUT = 0x2c2f33;
+const SCAFFOLD = 0xb98a4e;
 const ROAD_BUILT_COLOR = 0x4a4038;
 const ROAD_BUILDING_COLOR = 0xd9c39a;
 
@@ -258,6 +263,14 @@ export class MapRenderer {
 
     if (i === w.town.market) drawMarket(g, cxp, cyp);
     else if (w.homeOf(i) !== undefined) drawHouse(g, cxp, cyp);
+    else {
+      const b = w.buildingAt(i);
+      if (b !== undefined) {
+        const color = b.op === PLAYER_OP ? PLAYER_BORDER : RIVAL_BORDER;
+        if (b.remaining > 0) drawScaffold(g, cxp, cyp, color);
+        else drawDepot(g, cxp, cyp, color, b.staffed);
+      }
+    }
   }
 }
 
@@ -339,4 +352,57 @@ function drawMarket(g: Graphics, cx: number, cy: number): void {
   // A flag on a pole at the back corner.
   g.moveTo(cx, top - hh).lineTo(cx, top - hh - 22).stroke({ width: 2, color: 0x3b3128 });
   g.poly([cx, top - hh - 22, cx + 12, top - hh - 18, cx, top - hh - 14], true).fill(MARKET_FLAG);
+}
+
+/**
+ * A building under construction: a low half-built wall inside a frame of
+ * scaffold poles, and a flag in the building Op's colour.
+ */
+function drawScaffold(g: Graphics, cx: number, cy: number, color: number): void {
+  const hw = 22;
+  const hh = 11;
+  const h = 16;
+  walls(g, cx, cy, hw, hh, 5, DEPOT_WALL);
+  const corners = [
+    [cx - hw, cy],
+    [cx, cy + hh],
+    [cx + hw, cy],
+    [cx, cy - hh],
+  ] as const;
+  for (const [px, py] of corners) g.moveTo(px, py).lineTo(px, py - h).stroke({ width: 2, color: SCAFFOLD });
+  // Rails joining the tops of the poles, and a diagonal brace on each front face.
+  for (let k = 0; k < 4; k++) {
+    const [ax, ay] = corners[k]!;
+    const [bx, by] = corners[(k + 1) % 4]!;
+    g.moveTo(ax, ay - h).lineTo(bx, by - h).stroke({ width: 1.5, color: SCAFFOLD });
+  }
+  g.moveTo(cx - hw, cy - 5).lineTo(cx, cy + hh - h).stroke({ width: 1.5, color: SCAFFOLD });
+  g.moveTo(cx, cy + hh - 5).lineTo(cx + hw, cy - h).stroke({ width: 1.5, color: SCAFFOLD });
+  g.moveTo(cx, cy - hh - h).lineTo(cx, cy - hh - h - 12).stroke({ width: 1.5, color: 0x3b3128 });
+  g.poly([cx, cy - hh - h - 12, cx + 9, cy - hh - h - 9, cx, cy - hh - h - 6], true).fill(color);
+}
+
+/**
+ * A depot: a long shed with a sloped metal roof, a wide loading door and a
+ * roof stripe in its Op's colour. The door is lit while staffed and dark while idle.
+ */
+function drawDepot(g: Graphics, cx: number, cy: number, color: number, staffed: boolean): void {
+  const hw = 24;
+  const hh = 12;
+  const h = 12;
+  walls(g, cx, cy, hw, hh, h, DEPOT_WALL);
+  const top = cy - h;
+  // A shed roof: the back corner raised, so it reads as a slope, not a flat box.
+  const rise = 7;
+  g.poly([cx - hw, top, cx, top - hh - rise, cx + hw, top, cx, top + hh], true).fill(DEPOT_ROOF);
+  g.moveTo(cx - hw / 2, top + hh / 2).lineTo(cx + hw / 2, top - hh / 2 - rise / 2).stroke({ width: 3, color });
+  // Ribs on the right wall, like corrugated metal.
+  for (const f of [0.25, 0.5, 0.75]) {
+    const x = cx + hw * f;
+    const y = cy + hh - hh * f;
+    g.moveTo(x, y).lineTo(x, y - h).stroke({ width: 1, color: shade(DEPOT_WALL, 0.5), alpha: 0.7 });
+  }
+  // A wide loading door on the left wall.
+  const door = staffed ? DEPOT_DOOR_OPEN : DEPOT_DOOR_SHUT;
+  g.poly([cx - 18, cy + 3, cx - 6, cy + 9, cx - 6, cy + 1, cx - 18, cy - 5], true).fill(door);
 }

@@ -197,15 +197,21 @@ The ownership overlay (`O` or the Owners button) fills each tile by
 named people's blue. A legend shows while it is on.
 
 The build sidebar (`#sidebar`, DESIGN.md 15) holds the tools: Road
-(`#tool-road`) and Stake (`#tool-stake`). `TOOLS` in `main.ts` maps each
-button to a mode. A tile under survey is drawn with a dashed outline, corner
-posts and a pennant in the staking Op's colour (`drawSurvey` in `render.ts`).
+(`#tool-road`), Stake (`#tool-stake`) and Depot (`#tool-depot`). `TOOLS` in
+`main.ts` maps each button to a mode. A tile under survey is drawn with a
+dashed outline, corner posts and a pennant in the staking Op's colour
+(`drawSurvey` in `render.ts`). A building under construction is a scaffold
+with a flag in its Op's colour (`drawScaffold`). A built depot is a shed with
+a sloped roof, an Op-coloured roof stripe and a loading door that is lit while
+staffed and dark while idle (`drawDepot`). The inspector's Building row reads
+`describeBuilding` in `state.ts`.
 
 Controls: drag or the arrow keys pan, the wheel or `+`/`-` zoom, Home centres
 on your land, `T` centres on the town, `O` toggles the ownership overlay, `R`
 or the Road button toggles road mode, `C` or the Stake button toggles stake
-mode, Esc leaves either and closes the inspector. In road mode a click orders
-a road on that tile, in stake mode it stakes the tile. The hover outline is
+mode, `B` or the Depot button toggles depot mode, Esc leaves any of them and
+closes the inspector. In road mode a click orders a road on that tile, in
+stake mode it stakes the tile, in depot mode it places a depot. The hover outline is
 green where the tool would likely work and red where it would not. Outside road mode a click shows what
 the tile is in the HUD. The HUD shows the game date, the clock (speed and
 mode), speed buttons, cash and attention left today as N/40
@@ -233,7 +239,10 @@ deposit, a rival tile and one of yours and reads `#inspector` from the DOM
 second, fast-clock test server (port 8792, 25 ms ticks, data in
 `test-results/smoke-data-fast`): it stakes a frontier tile from the sidebar,
 sees it drawn as surveyed (`9-surveying.png`), and waits for `#inspector` to
-name You as owner (`10-staked.png`). Install the browser once with `pnpm exec playwright install chromium`.
+name You as owner (`10-staked.png`). A fourth test, on the same fast server,
+lays a road on your land, places a depot beside it from the sidebar, and
+saves it under construction (`11-depot-building.png`) and built and staffed
+(`12-depot-built.png`), reading `#inspector-building` each time. Install the browser once with `pnpm exec playwright install chromium`.
 
 ## The minds
 
@@ -274,6 +283,31 @@ each of those systems lands.
 3. Add its handler to `dispatch` in `packages/sim/src/apply.ts`. Validate in
    full before changing anything. `apply()` checks and charges attention for
    every command, and charges only on success.
+
+### A building
+
+Buildings are in `packages/sim/src/buildings.ts` (DESIGN.md 6.3, 5.5, D-017).
+
+1. Add the kind to `BUILDING_KINDS` in protocol. `parseCommand` takes it from
+   there.
+2. Give it a row in `BUILDING_SPEC`: construction `cost`, `hiring` (paid with
+   the cost), `buildTicks` and daily `wage`.
+3. Draw it in `render.ts` with its own silhouette and colours (DESIGN.md 15),
+   and add a sidebar button and a `TOOLS` entry in `main.ts`.
+
+`place_building` needs a dry tile the Op owns, with no road or building on it
+and a road (built or under construction) on one of its four sides. It is
+refused with `out_of_bounds`, `on_water`, `not_owner` (frontier counts),
+`occupied`, `no_road`, `insufficient_cash` or `insufficient_attention`. It
+charges `buildingPrice(kind)` and 5 attention, and adds a `Building` to
+`world.buildings` with `remaining` set to the build time. `updateBuildings`,
+called by `tick()` after the clock advances, counts construction down. At 0
+the building is active and staffed by the crew the hiring cost paid for. At
+the start of each game day every active building pays its wage, or goes
+unstaffed if its Op has less than the wage. An unstaffed building rehires on
+the first tick its Op can pay a wage, and pays it then. Wages are paid in
+building order and never take cash below 0. Buildings travel in the snapshot,
+the hash and every tick delta. A format 3 save without them loads with none.
 
 ### Attention
 

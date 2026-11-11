@@ -4,8 +4,8 @@
 import type { Camera } from "./iso.ts";
 import type { ClientWorld } from "./state.ts";
 
-/** What a click on the map does: inspect a tile, order a road or stake a claim. */
-export type Mode = "inspect" | "road" | "stake";
+/** What a click on the map does: inspect a tile, order a road, stake a claim or place a depot. */
+export type Mode = "inspect" | "road" | "stake" | "depot";
 
 export interface ClientDebug {
   ready: boolean;

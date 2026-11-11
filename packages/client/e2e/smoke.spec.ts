@@ -348,3 +348,84 @@ test("staking frontier land from the sidebar", async ({ page }) => {
   expect(state.ops.find((op) => op.id === "player")!.cash).toBe(10_000 - 200);
   expect(state.surveys).toEqual([]);
 });
+
+test("placing a depot next to a road from the sidebar", async ({ page }) => {
+  mkdirSync(SHOT_DIR, { recursive: true });
+  await page.goto(FAST_URL);
+  await waitReady(page);
+  await expect(page.locator("#sidebar #tool-depot")).toBeVisible();
+
+  // A dry tile of yours, nearest the middle of your land, with a dry tile of yours
+  // to its right. Neither has a road or a building.
+  const site = await page.evaluate(() => {
+    const w = window.groundwork.world!;
+    const me = w.playerOwner();
+    const home = w.playerHome();
+    const free = (x: number, y: number): boolean => {
+      if (!w.inBounds(x, y)) return false;
+      const i = w.index(x, y);
+      return w.owner[i] === me && w.terrain[i] !== 2 && w.road[i] === 0 && w.buildingAt(i) === undefined;
+    };
+    let best: { x: number; y: number } | undefined;
+    let bestD = Infinity;
+    for (let y = 0; y < w.height; y++) {
+      for (let x = 0; x < w.width; x++) {
+        if (!free(x, y) || !free(x + 1, y)) continue;
+        const d = (x - home.x) ** 2 + (y - home.y) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = { x, y };
+        }
+      }
+    }
+    return best!;
+  });
+  const road = { x: site.x + 1, y: site.y };
+  await page.evaluate(({ x, y }) => window.groundwork.centreOn(x, y, 1.5), site);
+  await frames(page);
+  const at = await page.evaluate(({ x, y }) => window.groundwork.tileToClient(x, y), site);
+  const roadAt = await page.evaluate(({ x, y }) => window.groundwork.tileToClient(x, y), road);
+  const clip = { x: at.x - 60, y: at.y - 70, width: 120, height: 100 };
+  const cashBefore = await page.evaluate(() => window.groundwork.world!.playerCash()!);
+
+  // Lay the road with the Road tool.
+  await page.locator("#tool-road").click();
+  await page.mouse.click(roadAt.x, roadAt.y);
+  await expect(page.locator("#hud-message")).toHaveText(`Road ordered at (${road.x}, ${road.y})`);
+
+  // Then the depot beside it with the Depot tool.
+  await page.locator("#tool-depot").click();
+  await expect(page.locator("#tool-depot")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#tool-road")).toHaveAttribute("aria-pressed", "false");
+  await page.mouse.click(at.x, at.y);
+  await expect(page.locator("#hud-message")).toHaveText(`Depot ordered at (${site.x}, ${site.y}). Under construction.`);
+  await page.waitForFunction(({ x, y }) => {
+    const w = window.groundwork.world!;
+    return w.buildingAt(w.index(x, y)) !== undefined;
+  }, site);
+
+  // Inspect it: under construction.
+  await page.locator("#tool-depot").click();
+  await page.mouse.click(at.x, at.y);
+  const building = page.locator("#inspector-building");
+  await expect(building).toHaveText(/^Your depot, under construction, .* left$/);
+  await page.mouse.move(1100, 760);
+  await frames(page);
+  const underConstruction = await page.screenshot({ clip });
+  await page.screenshot({ path: join(SHOT_DIR, "11-depot-building.png") });
+
+  // 8 game hours at 25 ms a tick is 12 seconds. Then it is built and staffed.
+  await expect(building).toHaveText("Your depot, staffed", { timeout: 40_000 });
+  await frames(page);
+  const built = await page.screenshot({ clip });
+  await page.screenshot({ path: join(SHOT_DIR, "12-depot-built.png") });
+  expect(built.equals(underConstruction)).toBe(false);
+
+  // The server agrees, and the price with hiring came out of your cash.
+  const state = await serverState(page);
+  const i = site.y * state.width + site.x;
+  expect(state.buildings.find((b) => b.tile === i)).toMatchObject({ kind: "depot", op: "player", remaining: 0 });
+  const cashAfter = state.ops.find((op) => op.id === "player")!.cash;
+  // A road costs at most a few hundred, the depot 1,500. A wage may have been paid since.
+  expect(cashBefore - cashAfter).toBeGreaterThanOrEqual(1_500);
+});

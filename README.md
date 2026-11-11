@@ -9,8 +9,8 @@ The design is in `DESIGN.md`. How it gets built is in `PROCESS.md`.
 ## Status
 
 Ring 1, first playable, in progress. You can open the world in a browser,
-look around the map, find the town and its people, see who owns what and lay
-roads on your land. There is no economy yet.
+look around the map, find the town and its people, see who owns what, lay
+roads, stake land and build a depot. There is no ore trade yet.
 
 ## How to play
 
@@ -18,7 +18,8 @@ The world server runs on the Fedora box. On the home network, open
 `http://laptop.local:7400` in a browser. Drag to pan, scroll to zoom, press
 Home to find your land and R to lay roads.
 
-The build sidebar on the right holds the tools: Road (R) and Stake (C). Click
+The build sidebar on the right holds the tools: Road (R), Stake (C) and
+Depot (B). Click
 one to turn it on and click it again, or press Esc, to turn it off. Roads can
 go on your own land and across the frontier, the land no one owns yet, so you
 can build a road out to a deposit before you own it. You cannot lay a road on
@@ -32,6 +33,19 @@ who is surveying it and how long is left. When the survey is done the tile is
 yours. You cannot stake water, land someone owns, or a tile someone else is
 already surveying.
 
+To build a depot, pick Depot (B) and click a tile of your own land that has a
+road on one of its four sides. A road still being built counts. The depot
+costs $1,500, which is $1,200 to build and $300 to hire its crew, and 5
+attention. It is under construction for 8 game hours, drawn as a scaffold
+with a flag in your colour. Then it is a grey shed with a sloped roof and a
+yellow stripe. A built depot pays its crew $100 at the start of every game
+day. If you cannot pay, the crew stops work: the depot is idle and its door
+goes dark. As soon as you have $100 again it hires them back and pays them.
+Your cash never goes below zero. The inspector's Building row says whether a
+depot is under construction, staffed or idle. You cannot build on water, on
+a road, on a tile that already has a building, on frontier or on land
+someone else owns.
+
 Press T to centre the map on the town. Its houses have red pitched roofs and
 the market is the wide hall with a striped roof and a flag. Press O, or the
 Owners button, to colour every parcel by who owns it: yellow is yours, red is
@@ -42,9 +56,9 @@ rich it is. Esc closes it.
 
 Attention in the HUD is how much you can still do today, shown as N/40.
 Every operation, yours and the rival's, gets 40 points at the start of each
-game day. Laying a road costs 1 and staking a tile costs 3. Points you do not use are gone at the next
-day, so they do not pile up. When you run out, a road or a stake is refused
-until the day turns.
+game day. Laying a road costs 1, staking a tile costs 3 and placing a depot
+costs 5. Points you do not use are gone at the next day, so they do not pile
+up. When you run out, the command is refused until the day turns.
 
 ## Run locally
 

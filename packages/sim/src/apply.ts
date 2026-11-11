@@ -7,10 +7,12 @@ import {
   type Command,
   type CommandErrorCode,
   type CommandResult,
+  type PlaceBuilding,
   type PlaceRoad,
   type StakeClaim,
 } from "@groundwork/protocol";
 import { attentionCost } from "./attention.ts";
+import { BUILDING_SPEC, buildingAt, buildingPrice } from "./buildings.ts";
 import {
   inBounds,
   NO_OWNER,
@@ -94,12 +96,42 @@ function stakeClaim(world: World, cmd: StakeClaim): CommandResult {
   return { ok: true };
 }
 
+/** True if a road, built or under construction, touches the tile on a side. */
+function nextToRoad(world: World, x: number, y: number): boolean {
+  for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) {
+    if (inBounds(world, nx, ny) && world.road[tileIndex(world, nx, ny)] !== ROAD_NONE) return true;
+  }
+  return false;
+}
+
+function placeBuilding(world: World, cmd: PlaceBuilding): CommandResult {
+  const k = opIndex(world, cmd.op);
+  if (k < 0) return reject("unknown_op", `no op ${cmd.op}`);
+  if (!inBounds(world, cmd.x, cmd.y)) return reject("out_of_bounds", `(${cmd.x}, ${cmd.y}) is off the map`);
+  const i = tileIndex(world, cmd.x, cmd.y);
+  if (world.terrain[i] === TERRAIN.water) return reject("on_water", `(${cmd.x}, ${cmd.y}) is water`);
+  // Buildings go only on the Op's own land, not on frontier (DESIGN.md 6.3).
+  if (world.owner[i] !== partyIndex(world, "op", cmd.op)) return reject("not_owner", `${cmd.op} does not own (${cmd.x}, ${cmd.y})`);
+  if (world.road[i] !== ROAD_NONE || buildingAt(world, i) !== undefined) {
+    return reject("occupied", `(${cmd.x}, ${cmd.y}) is already built on`);
+  }
+  if (!nextToRoad(world, cmd.x, cmd.y)) return reject("no_road", `(${cmd.x}, ${cmd.y}) has no road next to it`);
+  const price = buildingPrice(cmd.kind);
+  const op = world.ops[k]!;
+  if (op.cash < price) return reject("insufficient_cash", `${cmd.op} has ${op.cash}, a ${cmd.kind} costs ${price}`);
+  op.cash -= price;
+  world.buildings.push({ kind: cmd.kind, tile: i, op: cmd.op, remaining: BUILDING_SPEC[cmd.kind].buildTicks, staffed: false });
+  return { ok: true };
+}
+
 function dispatch(world: World, command: Command): CommandResult {
   switch (command.type) {
     case "place_road":
       return placeRoad(world, command);
     case "stake_claim":
       return stakeClaim(world, command);
+    case "place_building":
+      return placeBuilding(world, command);
   }
 }
 

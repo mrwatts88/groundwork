@@ -8,15 +8,8 @@ import type { World } from "./world.ts";
 
 export { ATTENTION_PER_DAY };
 
-/**
- * Commands that do not exist yet but whose cost is already chosen, so the
- * budget can be checked against them. R1-06 turns place_building into a
- * real command and moves it out of this list.
- */
-export type PlannedCommandType = "place_building";
-
 /** The one attention cost table. Every command type must have an entry. */
-export const ATTENTION_COST: Readonly<Record<CommandType | PlannedCommandType, number>> = {
+export const ATTENTION_COST: Readonly<Record<CommandType, number>> = {
   place_road: 1,
   stake_claim: 3,
   place_building: 5,

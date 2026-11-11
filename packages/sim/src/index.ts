@@ -12,8 +12,14 @@ export {
   ATTENTION_PER_DAY,
   attentionCost,
   refillAttention,
-  type PlannedCommandType,
 } from "./attention.ts";
+export {
+  BUILDING_SPEC,
+  buildingAt,
+  buildingPrice,
+  updateBuildings,
+  type BuildingSpec,
+} from "./buildings.ts";
 export {
   apply,
   CLAIM_FEE,
@@ -69,6 +75,7 @@ export {
   tileOwner,
   WORLD_FORMAT,
   type Build,
+  type Building,
   type Op,
   type Person,
   type Survey,

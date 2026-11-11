@@ -1,7 +1,7 @@
 // World state (DESIGN.md 4.2, 6.1). Plain data with integer fields only, so it
 // hashes and replays bit for bit.
 
-import type { OpId, Party, PartyKind, PersonState } from "@groundwork/protocol";
+import type { BuildingKind, OpId, Party, PartyKind, PersonState } from "@groundwork/protocol";
 import type { Rng } from "./rng.ts";
 
 export interface Op {
@@ -23,6 +23,17 @@ export interface Survey {
   readonly tile: number;
   readonly op: OpId;
   remaining: number;
+}
+
+/** A building an Op placed (DESIGN.md 6.3). See buildings.ts. */
+export interface Building {
+  readonly kind: BuildingKind;
+  readonly tile: number;
+  readonly op: OpId;
+  /** Game minutes of construction left. 0 means built and active. */
+  remaining: number;
+  /** Whether its crew is paid and working. */
+  staffed: boolean;
 }
 
 export const ROAD_NONE = 0;
@@ -70,6 +81,8 @@ export interface World {
   readonly builds: Build[];
   /** Stakes being surveyed, in the order they were made. */
   readonly surveys: Survey[];
+  /** Buildings, in the order they were placed. */
+  readonly buildings: Building[];
   /**
    * Everyone who can own land, in a fixed order: frontier first, then the
    * Ops, then the town, then named people. Owner values index this list.

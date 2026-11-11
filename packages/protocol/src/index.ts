@@ -51,8 +51,25 @@ export interface StakeClaim {
   readonly y: number;
 }
 
+/** Kinds of building an Op can place. Ring 1 has the depot (DESIGN.md 6.3, D-017). */
+export const BUILDING_KINDS = ["depot"] as const;
+export type BuildingKind = (typeof BUILDING_KINDS)[number];
+
+/**
+ * Place a building on a dry tile the Op owns, next to a road (DESIGN.md 6.3).
+ * The Op pays the build price (a hiring cost included) now. The building is
+ * under construction for its build time, then active.
+ */
+export interface PlaceBuilding {
+  readonly type: "place_building";
+  readonly op: OpId;
+  readonly kind: BuildingKind;
+  readonly x: number;
+  readonly y: number;
+}
+
 /** Every command any actor can issue. The one command API takes these (DESIGN.md 12.2). */
-export type Command = PlaceRoad | StakeClaim;
+export type Command = PlaceRoad | StakeClaim | PlaceBuilding;
 
 export type CommandType = Command["type"];
 
@@ -60,7 +77,7 @@ export type CommandType = Command["type"];
  * Every command type, at runtime. The sim's attention cost table is checked
  * against this list, and the line below fails to compile if a type is missing.
  */
-export const COMMAND_TYPES = ["place_road", "stake_claim"] as const satisfies readonly CommandType[];
+export const COMMAND_TYPES = ["place_road", "stake_claim", "place_building"] as const satisfies readonly CommandType[];
 type MissingCommandType = Exclude<CommandType, (typeof COMMAND_TYPES)[number]>;
 const allCommandTypesListed: [MissingCommandType] extends [never] ? true : never = true;
 void allCommandTypesListed;
@@ -79,6 +96,8 @@ export type CommandErrorCode =
   | "not_frontier"
   | "being_surveyed"
   | "already_road"
+  | "no_road"
+  | "occupied"
   | "insufficient_cash"
   | "insufficient_attention";
 
@@ -196,6 +215,21 @@ export interface SurveyState {
   readonly remaining: number;
 }
 
+/**
+ * A building an Op placed (DESIGN.md 6.3, 5.5). remaining counts down the
+ * construction. At 0 it is active. An active building is staffed while its Op
+ * pays the daily wage and idle while it cannot.
+ */
+export interface BuildingState {
+  readonly kind: BuildingKind;
+  readonly tile: number;
+  readonly op: OpId;
+  /** Game minutes of construction left. 0 means built. */
+  readonly remaining: number;
+  /** Whether its crew is paid and working. False while under construction. */
+  readonly staffed: boolean;
+}
+
 export interface WorldSnapshot {
   /** The world format version (see WORLD_FORMAT in sim). Ring 0 snapshots have none. */
   readonly format: number;
@@ -212,6 +246,8 @@ export interface WorldSnapshot {
   readonly builds: readonly BuildState[];
   /** Stakes still being surveyed, in the order they were made. Missing in saves from before R1-05. */
   readonly surveys: readonly SurveyState[];
+  /** Buildings Ops placed, in the order they were placed. Missing in saves from before R1-06. */
+  readonly buildings: readonly BuildingState[];
   readonly parties: readonly Party[];
   readonly town: TownState;
   /** The town's named people, in creation order. */
@@ -227,6 +263,7 @@ export interface WorldDelta {
   readonly ops: readonly OpState[];
   readonly builds: readonly BuildState[];
   readonly surveys: readonly SurveyState[];
+  readonly buildings: readonly BuildingState[];
 }
 
 // ---------------------------------------------------------------------------
@@ -299,6 +336,15 @@ export function parseCommand(v: unknown): Parsed<Command> {
       if (typeof op !== "string" || op.length === 0) return { ok: false, message: `${type} needs an op id` };
       if (!isInt(x) || !isInt(y)) return { ok: false, message: `${type} needs integer x and y` };
       return { ok: true, value: { type, op, x, y } };
+    }
+    case "place_building": {
+      const { op, kind, x, y } = v;
+      if (typeof op !== "string" || op.length === 0) return { ok: false, message: "place_building needs an op id" };
+      if (!BUILDING_KINDS.includes(kind as BuildingKind)) {
+        return { ok: false, message: `place_building needs a kind, one of ${BUILDING_KINDS.join(", ")}` };
+      }
+      if (!isInt(x) || !isInt(y)) return { ok: false, message: "place_building needs integer x and y" };
+      return { ok: true, value: { type: "place_building", op, kind: kind as BuildingKind, x, y } };
     }
     default:
       return { ok: false, message: `unknown command type ${JSON.stringify(v["type"])}` };
