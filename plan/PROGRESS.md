@@ -89,3 +89,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-10. Schema-valid place_road reply, usage row with 1607 tokens on haiku and ok 1, and the script stays out of every check.
 - **Learned:** a lean deliberation call costs about 1.6k tokens and 6 seconds on haiku. `/usr/bin/node` is on the non-interactive ssh PATH, so only pnpm and claude need absolute paths. The recorder sets busy_timeout so it can share the db with the running server.
 - **Next:** R0-11 ring 0 end-to-end check.
+
+## 2026-11-11, R0-11 ring 0 end-to-end check
+
+- **Did:** `tests/rings/ring0.sh` runs make check, determinism, `/health` on laptop.local:7400 and the live minds smoke over ssh. Row in docs/dev.md.
+- **Verified:** verifier PASS R0-11. Script ended ring0: ok, shellcheck clean on the Fedora box.
+- **Learned:** shellcheck is not on the Mac. Lint a script with `ssh -o BatchMode=yes laptop "shellcheck -S warning -" < file`. The Fedora clone only updates on deploy, so the smoke there runs the deployed code.
+- **Next:** R0-review.

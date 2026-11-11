@@ -256,7 +256,9 @@
         "tests/rings/ring0.sh runs make check, the determinism check, a health check against laptop.local:7400 and the live mind smoke, and exits 0",
         "shellcheck -S warning tests/rings/ring0.sh is clean"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-11. bash tests/rings/ring0.sh on the Mac ran make check, determinism, curl laptop.local:7400/health and the live minds smoke over ssh, ending ring0: ok (smoke 1587 tokens, 6063 ms, as Ada Fenwick, set -euo pipefail). shellcheck -S warning via stdin on the Fedora box clean. docs/dev.md row added.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-review",
