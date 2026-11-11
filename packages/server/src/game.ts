@@ -1,0 +1,86 @@
+// The authoritative world on the server: load or create it, replay the log to
+// where it stopped, apply commands, tick, persist and produce deltas.
+
+import type { Command, CommandResult, TileChange, WorldDelta } from "@groundwork/protocol";
+import { apply, createWorld, fromSnapshot, run, tick, toSnapshot, type World } from "@groundwork/sim";
+import type { Store } from "./store.ts";
+
+export const PLAYER_OP = "player";
+
+export interface GameOptions {
+  readonly seed: number;
+  readonly mapSize: number;
+  readonly snapshotEveryTicks: number;
+}
+
+export class Game {
+  readonly world: World;
+  private readonly store: Store;
+  private readonly snapshotEveryTicks: number;
+  private sentOwner: Uint16Array;
+  private sentRoad: Uint8Array;
+
+  constructor(store: Store, options: GameOptions) {
+    this.store = store;
+    this.snapshotEveryTicks = options.snapshotEveryTicks;
+    this.world = Game.load(store, options);
+    this.sentOwner = this.world.owner.slice();
+    this.sentRoad = this.world.road.slice();
+  }
+
+  /** Latest snapshot, then the command log since it, up to the tick reached. */
+  private static load(store: Store, options: GameOptions): World {
+    const snapshot = store.latestSnapshot();
+    if (snapshot === undefined) {
+      const world = createWorld({
+        seed: options.seed,
+        width: options.mapSize,
+        height: options.mapSize,
+        ops: [PLAYER_OP],
+      });
+      store.saveSnapshot(toSnapshot(world));
+      return world;
+    }
+    const world = fromSnapshot(snapshot);
+    const log = store.commandsSince(world.tick);
+    const reached = store.tick() ?? world.tick;
+    run(world, log, reached - world.tick);
+    // Commands accepted at the tick reached, before that tick ran.
+    for (const entry of log) if (entry.tick === world.tick) apply(world, entry.command);
+    return world;
+  }
+
+  /** Apply a command now. It is stamped with the current tick, which is where a replay puts it. */
+  command(command: Command): CommandResult {
+    const result = apply(this.world, command);
+    if (result.ok) this.store.appendCommand(this.world.tick, command);
+    return result;
+  }
+
+  step(): void {
+    tick(this.world);
+    if (this.world.tick % this.snapshotEveryTicks === 0) this.store.saveSnapshot(toSnapshot(this.world));
+    else this.store.setTick(this.world.tick);
+  }
+
+  /** What changed since the last delta. */
+  delta(): WorldDelta {
+    return {
+      owner: diff(this.sentOwner, this.world.owner),
+      road: diff(this.sentRoad, this.world.road),
+      ops: this.world.ops.map((op) => ({ id: op.id, cash: op.cash })),
+      builds: this.world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
+    };
+  }
+}
+
+function diff(sent: Uint8Array | Uint16Array, now: Uint8Array | Uint16Array): TileChange[] {
+  const out: TileChange[] = [];
+  for (let i = 0; i < now.length; i++) {
+    if (sent[i] !== now[i]) {
+      out.push([i, now[i]!]);
+      sent[i] = now[i]!;
+    }
+  }
+  return out;
+}

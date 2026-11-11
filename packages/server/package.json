@@ -7,11 +7,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node --experimental-strip-types --no-warnings src/main.ts"
   },
   "dependencies": {
     "@groundwork/minds": "workspace:*",
     "@groundwork/protocol": "workspace:*",
-    "@groundwork/sim": "workspace:*"
+    "@groundwork/sim": "workspace:*",
+    "ws": "^8.22.2"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.2"
   }
 }

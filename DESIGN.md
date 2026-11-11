@@ -526,3 +526,4 @@ Accounts, a second human Op, the API backend, possibly a cloud host.
 | D-007 | 2026-11-11 | Medium economy: 12 goods, visible chains. Free-text chat with structured offers | Matt's choices |
 | D-009 | 2026-11-11 | The repo is public on GitHub (mrwatts88/groundwork) | Matt's choice. Secrets stay out of the repo (section 18), and a history scan runs before the first push |
 | D-008 | 2026-11-11 | First playable: one town, one rival, one resource, chat with a few NPCs | Matt's choice |
+| D-010 | 2026-11-11 | The server stores SQLite through Node's built-in `node:sqlite` and serves WebSockets with `ws`. Client messages are checked by hand-written parsers in protocol for now | No native module to build on the Fedora box. `ws` is small and standard. Zod can replace the parsers when the command set grows |

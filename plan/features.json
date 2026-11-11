@@ -112,7 +112,7 @@
         "a test shows the clock switches to away mode after the configured idle time with no client input, and back on input",
         "clock rates and the data dir come from config, with defaults matching DESIGN.md 11.1"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-06",

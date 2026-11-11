@@ -11,6 +11,7 @@ export { apply, ROAD_BUILD_TICKS, ROAD_COST } from "./apply.ts";
 export { hashWorld } from "./hash.ts";
 export { CLAIM_SIZE, createWorld, STARTING_CASH, type WorldOptions } from "./mapgen.ts";
 export { run, type RunReport } from "./replay.ts";
+export { fromSnapshot, toSnapshot } from "./snapshot.ts";
 export { createRng, nextInt, nextU32, type Rng } from "./rng.ts";
 export {
   SCENARIO_OPS,

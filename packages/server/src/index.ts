@@ -10,3 +10,9 @@ export const PACKAGE: PackageName = "server";
 export function protocolVersionsAgree(): boolean {
   return SIM_PROTOCOL_VERSION === PROTOCOL_VERSION && MINDS_PROTOCOL_VERSION === PROTOCOL_VERSION;
 }
+
+export { Clock, type ClockOptions } from "./clock.ts";
+export { DEFAULT_CONFIG, loadConfig, type ServerConfig } from "./config.ts";
+export { Game, PLAYER_OP } from "./game.ts";
+export { startServer, type Health, type RunningServer } from "./server.ts";
+export { Store } from "./store.ts";
