@@ -185,7 +185,9 @@
         "ssh laptop 'git -C ~/code/groundwork rev-parse HEAD' equals the Mac's origin/main",
         "the lean claude -p call from DESIGN.md 13.4, run over ssh from an empty dir, returns JSON with structured_output and under 3000 input plus cache tokens"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-08. pnpm 10.14.0 at ~/.local/bin on laptop. Clone HEAD b901f89 equals origin/main. Lean claude -p call from an empty dir returned structured_output, 1098 input plus cache tokens, 1.5 s.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-09",

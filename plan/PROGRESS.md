@@ -68,3 +68,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-02 on the third run. Visibility PUBLIC, HEAD equals origin main, clean tree. No keys or tokens anywhere, no email in file content. The first two runs failed on the email in commit metadata: first because no decision recorded it, then because the verifier could not see Matt's consent. Quoting his question-dialog answers word for word cleared it.
 - **Learned:** the autopilot permission classifier blocks creating a public repo even with an approved human item, so any public step needs Matt at the keyboard. Record an exception to an acceptance check as a DESIGN.md decision before the action, and hand the verifier the human's exact words, or it fails the item.
 - **Next:** R0-08 Fedora box prep.
+
+## 2026-11-11, R0-08 Fedora box prep
+
+- **Did:** installed pnpm 10.14.0 without sudo with `npm install -g pnpm@10.14.0 --prefix ~/.local` on the Fedora box, and cloned the public repo to `~/code/groundwork` there over https.
+- **Verified:** verifier PASS R0-08. pnpm 10.14.0, clone HEAD equals origin/main, and the lean 13.4 `claude -p` call from an empty dir returned structured_output with about 1.1k input plus cache tokens.
+- **Learned:** with `--system-prompt` set, almost all input tokens land as cache_creation, not input_tokens. Count all three fields when checking cost. `npm --prefix ~/.local` puts tools in `~/.local/bin` without sudo.
+- **Next:** R0-09 deploy script and systemd user service.

@@ -19,21 +19,17 @@ The client is in (R0-06): `pnpm build`, then start the server and open
 `http://localhost:8787` to see the isometric map, pan and zoom, lay roads on
 your land and watch the date and clock speed in the HUD. `make check` runs
 the Playwright smoke test. A lean headless `claude -p` NPC call was proven on the Fedora box
-(DESIGN.md 13.4). The minds skeleton is in (R0-07): a Mind with a fake
+(DESIGN.md 13.4). The Fedora box is prepped (R0-08): pnpm 10.14.0 in `~/.local/bin` and a clone at `~/code/groundwork`. The minds skeleton is in (R0-07): a Mind with a fake
 backend, a `claude -p` backend, schema-checked replies, a budget governor
 (120 calls per hour) and a usage row per call. Nothing schedules it yet.
 
-**In progress:** nothing.
+**Next (agent):** R0-09 deploy: scripts/deploy.sh, systemd user service, nightly backup.
 
-**Next (agent):** R0-08 Fedora box prep, then whatever `plan.py next` lists.
-
-**Waiting on Matt:** nothing. R0-look comes after R0-review.
-
-**Blocked:** nothing.
+**Waiting on Matt:** nothing. R0-look comes after R0-review. **In progress, blocked:** nothing.
 
 **Notes for the next session:** development is on the Mac
 (`cd ~/code/groundwork && claude`, then `/next`). The world server will run on
-the Fedora box. On the Fedora box, `claude` and later `pnpm` live in
+the Fedora box. On the Fedora box, `claude` and `pnpm` live in
 `~/.local/bin`, which non-interactive ssh does not have on its PATH. Use
 absolute paths. Packages export their `src/index.ts` directly and imports
 inside a package use the `.ts` extension. The server runs its TS directly
