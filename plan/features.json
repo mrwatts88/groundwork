@@ -37,7 +37,7 @@
         "git rev-parse HEAD equals git ls-remote origin main",
         "git status is clean"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-03",
