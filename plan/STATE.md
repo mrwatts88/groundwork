@@ -34,8 +34,7 @@ and decision D-012. Plan order is build order. On the Fedora box, `claude`
 and `pnpm` live in `~/.local/bin`, off the non-interactive PATH. Packages export `src/index.ts`
 and imports inside a package use the `.ts` extension. The server runs TS with
 `node --experimental-strip-types`, so no enums or parameter properties.
-shellcheck runs only on the Fedora box.
-New party kinds go at the end of `world.parties`, since owner values index it.
+shellcheck runs only on the Fedora box. New party kinds go at the end of `world.parties`, since owner values index it.
 Bump WORLD_FORMAT when an old save can no longer load. A new command needs
 `COMMAND_TYPES` and an `ATTENTION_COST` entry (docs/dev.md "A command").
 Playwright has a fast-clock server on 8792 (25 ms ticks) for timed checks.
