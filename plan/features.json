@@ -405,7 +405,9 @@
         "README How to play mentions T, O and the inspector",
         "make check passes"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-03. make check ok (124 unit tests, determinism hash 6e80b98b432ae1ab across processes, 3/3 Playwright). Smoke test 'the town, the ownership overlay and the inspector' passed. Verifier opened 4-town.png (six houses, the market with its striped roof and flag, the town roads), 5-overlay-off.png and 6-overlay-on.png (four owner colours and a legend), and 7-inspector-town.png and 8-inspector-deposit.png. #inspector read from the DOM on town, market, person, deposit (richness matches world), rival (Redrock Mining) and player (You) tiles. README How to play covers T, O and the inspector. No sim changes, no Math.random or Date in sim.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-04",

@@ -4,9 +4,10 @@ Rewritten at the end of every session. Under 40 lines.
 **Ring:** 1, first playable. Planned: R1-01 to R1-20, then R1-review.
 **What Matt can play now:** open `http://laptop.local:7400`
 (`http://laptop-ts:7400` away from home), pan, zoom, press Home and lay roads
-with R. The town has a light border, the rival's claim a red one, and three
-parcels owned by named people a light blue one. Clicking a tile names its
-owner. Older worlds are kept as groundwork.format-<N>.db. No economy yet.
+with R. T centres on the town, drawn with six houses, a market and roads. O
+colours land by owner (you, the rival Redrock Mining, the town, people).
+Clicking a tile opens the inspector: terrain, owner by name, deposit richness
+and building. Older worlds are kept as groundwork.format-<N>.db. No economy yet.
 **At the end of Ring 1 Matt will be able to:** run the ore loop (stake, roads,
 depot, harvester, truck, sell to a growing town) against a Mind-led rival,
 chat with six named people and buy land in chat, on 40 attention a day.
@@ -21,8 +22,10 @@ world has one town with roads and a market, 6x6 claims for player and rival
 owning a 4x4 parcel, one near a deposit (D-014). WORLD_FORMAT is 3. The server
 runs the clock, SQLite snapshots and the command log, and resumes exactly.
 Minds have fake and `claude -p` backends and a governor, not yet scheduled.
-`/health` has the town name and the Op ids. Service: Fedora box, port 7400.
-**Next (agent):** R1-03, client town, land overlay and inspector panel.
+`/health` has the town name and the Op ids. The client has an inspector
+panel, an ownership overlay and town buildings. The rival's display name is
+config (`GROUNDWORK_RIVAL_NAME`), sent in `welcome` as `opNames`. Service: Fedora box, port 7400.
+**Next (agent):** R1-04, attention points and the HUD, then R1-05 staking.
 **Waiting on Matt:** R0-look. Open the world, place a few roads, and add notes
 on the look to plan/PLAYTEST.md. It blocks nothing.
 **In progress, blocked:** nothing.

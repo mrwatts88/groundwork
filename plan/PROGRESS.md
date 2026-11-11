@@ -125,3 +125,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R1-02 on the second run. The first run failed only on the docs rule: the new border and owner names had no player-facing line in docs/dev.md. people.test.ts covers 8 seeds and the 64x64 map. Determinism hash 6e80b98b432ae1ab matched in both processes, the smoke passed 2 of 2, and check-fast ran 121 tests.
 - **Learned:** people are placed after the Op claims, so the claims draw from the RNG in the same order as before and keep their spots. Any change a player can see (a border colour, HUD text) needs its line in docs/dev.md in the same item, or the verifier fails it.
 - **Next:** R1-03 client town, land overlay and inspector panel.
+
+## 2026-11-11, R1-03 client town, ownership overlay and inspector
+
+- **Did:** the client draws a house on each named person's home and the market as a wide hall with a striped roof and a flag. T centres on the town. O (or the Owners button) fills land by owner kind with a legend. Clicking a tile fills `#inspector` with terrain, owner by name, deposit richness and building, through `ClientWorld.inspect`. The rival's name comes from `GROUNDWORK_RIVAL_NAME` (default Redrock Mining) and reaches the client in `welcome` as `opNames`. README How to play and docs/dev.md cover T, O and the inspector.
+- **Verified:** verifier PASS R1-03. make check ok, 124 unit tests, determinism hash 6e80b98b432ae1ab, Playwright 3 of 3. The verifier opened the town, overlay off and on, and inspector screenshots.
+- **Learned:** Ops had no display name anywhere. A display-only name in server config, sent in `welcome`, avoided a sim change and a WORLD_FORMAT bump. R1-12 can reuse it for the rival leader. `window.groundwork.centreOn(x, y, scale)` makes clicking any tile in Playwright reliable.
+- **Next:** R1-04 attention.
