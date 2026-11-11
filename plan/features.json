@@ -256,7 +256,7 @@
         "tests/rings/ring0.sh runs make check, the determinism check, a health check against laptop.local:7400 and the live mind smoke, and exits 0",
         "shellcheck -S warning tests/rings/ring0.sh is clean"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-review",
