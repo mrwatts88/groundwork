@@ -107,6 +107,47 @@ with the full world on connect, a `tick` with the delta every tick,
 parse. Every accepted command is stamped with the current tick, which is
 where a replay applies it.
 
+## Deploy
+
+The world server runs on the Fedora box as a systemd user service
+(DESIGN.md 18). Linger is on, so it runs with no one logged in. From the Mac:
+
+```
+scripts/deploy.sh
+```
+
+It pushes `main`, pulls it on the Fedora box (`ssh laptop`, set
+`GROUNDWORK_HOST_ALIAS=laptop-ts` away from home), then runs
+`scripts/deploy-remote.sh` there. That installs, builds the client, links the
+units from `deploy/` into `~/.config/systemd/user`, enables them, restarts the
+server and prints its health JSON. Only committed work is deployed.
+
+| Thing | Where |
+|---|---|
+| The game | `http://laptop.local:7400` |
+| Health | `curl -s http://laptop.local:7400/health` |
+| The world | `~/.local/share/groundwork/groundwork.db` on the Fedora box |
+| Secrets and overrides | `~/.config/groundwork/env` on the Fedora box, optional, never in the repo |
+| Backups | `~/groundwork-backups/`, one copy a night at about 03:30, the newest 14 kept |
+
+With no one connected the clock runs away, one tick every 10 real seconds, so
+two health reads 12 seconds apart show the tick going up.
+
+Useful commands on the Fedora box:
+
+```
+systemctl --user status groundwork
+journalctl --user -u groundwork -f
+systemctl --user restart groundwork
+systemctl --user start groundwork-backup.service
+systemctl --user list-timers
+```
+
+A restart saves the tick on the way down and resumes from it. The backup uses
+SQLite's online backup, so it is safe while the server runs. To restore, stop
+the service, copy a backup over `groundwork.db`, delete any
+`groundwork.db-wal` and `groundwork.db-shm` next to it and start the service.
+
 ## The client
 
 `packages/client` is Vite plus PixiJS (DESIGN.md 15). It opens a WebSocket to

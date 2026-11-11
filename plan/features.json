@@ -211,7 +211,7 @@
         "running the backup service once writes a copy to ~/groundwork-backups/ and keeps at most 14",
         "docs/dev.md has a Deploy section"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-10",
