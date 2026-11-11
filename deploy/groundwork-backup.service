@@ -1,0 +1,13 @@
+# Copies the world's SQLite file to ~/groundwork-backups/ and keeps 14.
+# Started nightly by groundwork-backup.timer.
+
+[Unit]
+Description=Groundwork SQLite backup
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/code/groundwork
+Environment=GROUNDWORK_DATA_DIR=%h/.local/share/groundwork
+Environment=GROUNDWORK_BACKUP_DIR=%h/groundwork-backups
+Environment=GROUNDWORK_BACKUP_KEEP=14
+ExecStart=/usr/bin/bash scripts/backup.sh

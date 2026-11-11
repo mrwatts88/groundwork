@@ -1,0 +1,27 @@
+# The Groundwork world server (DESIGN.md 18). A systemd user unit on the
+# Fedora box. scripts/deploy-remote.sh links it into ~/.config/systemd/user.
+
+[Unit]
+Description=Groundwork world server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/code/groundwork
+Environment=GROUNDWORK_PORT=7400
+Environment=GROUNDWORK_DATA_DIR=%h/.local/share/groundwork
+# Secrets and host overrides, never in the repo. Optional.
+EnvironmentFile=-%h/.config/groundwork/env
+ExecStart=/usr/bin/node --experimental-strip-types --no-warnings packages/server/src/main.ts
+Restart=on-failure
+RestartSec=5
+# SIGTERM makes the server save its tick and stop.
+KillSignal=SIGTERM
+TimeoutStopSec=20
+# The box also runs other work. Keep the server lean.
+MemoryHigh=768M
+MemoryMax=1G
+
+[Install]
+WantedBy=default.target
