@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/agent/session-context.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/agent/stop-check.sh" }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(scripts/agent/plan.py *)",
+      "Bash(python3 scripts/agent/plan.py *)",
+      "Bash(scripts/deploy.sh)",
+      "Bash(make check-fast)",
+      "Bash(make check)",
+      "Bash(scripts/agent/session-context.sh)",
+      "Bash(tests/rings/*)",
+      "Bash(pnpm *)",
+      "Bash(node *)",
+      "Bash(npx playwright *)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(ssh -o BatchMode=yes laptop *)",
+      "Bash(curl -s http://laptop.local:7400/*)",
+      "Bash(git rev-parse *)",
+      "Bash(git ls-remote *)",
+      "Bash(git show *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push origin main)",
+      "Bash(git tag ring-*)",
+      "Bash(git push origin ring-*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(**/.config/groundwork/env)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)"
+    ]
+  }
+}
