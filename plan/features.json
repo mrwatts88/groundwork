@@ -5,24 +5,35 @@
     {
       "id": "R0-01",
       "ring": 0,
-      "title": "Matt approves creating the private GitHub repo mrwatts88/groundwork",
+      "title": "Matt approves creating the public GitHub repo mrwatts88/groundwork",
       "owner": "human",
-      "design": ["18"],
+      "design": [
+        "18"
+      ],
       "depends_on": [],
       "instructions": "Say yes in a session. Creating a GitHub repo is outward-facing, so it waits for your OK.",
-      "acceptance": ["Matt has said yes in a session, recorded in plan/PROGRESS.md"],
-      "status": "todo"
+      "acceptance": [
+        "Matt has said yes in a session, recorded in plan/PROGRESS.md"
+      ],
+      "status": "done",
+      "evidence": "Matt approved creating the repo in the setup session on 2026-11-11 and chose public: \"Okay, let's create it. It can be public.\"",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-02",
       "ring": 0,
-      "title": "Publish the repo to private GitHub mrwatts88/groundwork and push main",
+      "title": "Publish the repo to public GitHub mrwatts88/groundwork and push main",
       "owner": "agent",
       "effort": "low",
-      "design": ["18"],
-      "depends_on": ["R0-01"],
+      "design": [
+        "18"
+      ],
+      "depends_on": [
+        "R0-01"
+      ],
       "acceptance": [
-        "gh repo view mrwatts88/groundwork --json visibility -q .visibility prints PRIVATE",
+        "gh repo view mrwatts88/groundwork --json visibility -q .visibility prints PUBLIC",
+        "before the first push, a scan of the full history finds no secrets, API keys, tokens or personal email addresses",
         "git rev-parse HEAD equals git ls-remote origin main",
         "git status is clean"
       ],
@@ -34,7 +45,11 @@
       "title": "pnpm workspace scaffold: protocol, sim, minds, server, client packages, TypeScript strict, Vitest, check-fast wired",
       "owner": "agent",
       "effort": "medium",
-      "design": ["12.2", "17", "19"],
+      "design": [
+        "12.2",
+        "17",
+        "19"
+      ],
       "depends_on": [],
       "acceptance": [
         "ls packages prints client minds protocol server sim",
@@ -52,8 +67,16 @@
       "title": "Sim core: seeded map generation, tick, seeded RNG, the command API apply(state, command), one command (place_road), state hash",
       "owner": "agent",
       "effort": "medium",
-      "design": ["1", "4.2", "11.1", "12.2", "12.3"],
-      "depends_on": ["R0-03"],
+      "design": [
+        "1",
+        "4.2",
+        "11.1",
+        "12.2",
+        "12.3"
+      ],
+      "depends_on": [
+        "R0-03"
+      ],
       "acceptance": [
         "a Vitest determinism test advances a 128x128 seeded world 10000 ticks with a scripted command log twice and gets the same state hash",
         "the same test run in two separate processes prints the same hash (a test:slow script or a small CLI the verifier runs twice)",
@@ -69,8 +92,14 @@
       "title": "Server: clock (present, speed-up, away), WebSocket state and commands, SQLite snapshot plus command log, resume after restart, /health",
       "owner": "agent",
       "effort": "medium",
-      "design": ["11.1", "11.2", "12.1"],
-      "depends_on": ["R0-04"],
+      "design": [
+        "11.1",
+        "11.2",
+        "12.1"
+      ],
+      "depends_on": [
+        "R0-04"
+      ],
       "acceptance": [
         "an integration test starts the server with a fast clock, connects a WebSocket client, receives the initial state and tick updates",
         "the test sends place_road over the WebSocket and sees it in the next state, and an invalid command returns an error message",
@@ -87,8 +116,13 @@
       "title": "Client: Vite + PixiJS isometric map from server state, pan and zoom, click to place a road, HUD with date and clock speed",
       "owner": "agent",
       "effort": "medium",
-      "design": ["15", "12.1"],
-      "depends_on": ["R0-05"],
+      "design": [
+        "15",
+        "12.1"
+      ],
+      "depends_on": [
+        "R0-05"
+      ],
       "acceptance": [
         "a Playwright smoke test starts a test server and the client, waits for the canvas, and saves a screenshot to test-results/",
         "the screenshot shows an isometric terrain map with visibly different terrain types (verifier opens the image)",
@@ -104,8 +138,14 @@
       "title": "Minds skeleton: Mind interface, fake backend, claude -p backend, schema-validated output, budget governor counting calls",
       "owner": "agent",
       "effort": "medium",
-      "design": ["13.2", "13.4", "13.5"],
-      "depends_on": ["R0-03"],
+      "design": [
+        "13.2",
+        "13.4",
+        "13.5"
+      ],
+      "depends_on": [
+        "R0-03"
+      ],
       "acceptance": [
         "unit tests cover the fake backend replaying a recorded reply by prompt hash and returning schema-valid output",
         "unit tests cover the claude -p backend against a stubbed process: it builds the exact flags in DESIGN.md 13.4, runs in an empty working dir, parses structured_output, and rejects malformed or schema-invalid output with a typed error",
@@ -121,8 +161,13 @@
       "title": "Fedora box prep: pnpm without sudo, repo clone, claude path and a lean headless call checked",
       "owner": "agent",
       "effort": "low",
-      "design": ["18", "13.4"],
-      "depends_on": ["R0-02"],
+      "design": [
+        "18",
+        "13.4"
+      ],
+      "depends_on": [
+        "R0-02"
+      ],
       "acceptance": [
         "ssh -o BatchMode=yes laptop '~/.local/bin/pnpm --version' prints 10.x",
         "ssh laptop 'git -C ~/code/groundwork rev-parse HEAD' equals the Mac's origin/main",
@@ -136,8 +181,14 @@
       "title": "Deploy: scripts/deploy.sh, systemd user service on the Fedora box, nightly SQLite backup timer",
       "owner": "agent",
       "effort": "medium",
-      "design": ["18", "11.2"],
-      "depends_on": ["R0-06", "R0-08"],
+      "design": [
+        "18",
+        "11.2"
+      ],
+      "depends_on": [
+        "R0-06",
+        "R0-08"
+      ],
       "acceptance": [
         "scripts/deploy.sh run on the Mac pulls, installs, builds and restarts the service on the Fedora box, then prints the health JSON",
         "curl -s http://laptop.local:7400/health from the Mac returns JSON with a tick that increases over 10 seconds",
@@ -154,8 +205,15 @@
       "title": "Live mind smoke on the Fedora box: one real claude -p call through the minds package",
       "owner": "agent",
       "effort": "low",
-      "design": ["13.4", "13.5", "17"],
-      "depends_on": ["R0-07", "R0-09"],
+      "design": [
+        "13.4",
+        "13.5",
+        "17"
+      ],
+      "depends_on": [
+        "R0-07",
+        "R0-09"
+      ],
       "acceptance": [
         "ssh laptop 'cd ~/code/groundwork && ~/.local/bin/pnpm --filter @groundwork/minds smoke' makes one real call as a named NPC and prints a schema-valid reply",
         "the smoke run records a usage row in the server's SQLite with tokens under 3000 and ok true",
@@ -169,8 +227,13 @@
       "title": "tests/rings/ring0.sh: the end-to-end check the Ring 0 review runs",
       "owner": "agent",
       "effort": "low",
-      "design": ["23.2"],
-      "depends_on": ["R0-09", "R0-10"],
+      "design": [
+        "23.2"
+      ],
+      "depends_on": [
+        "R0-09",
+        "R0-10"
+      ],
       "acceptance": [
         "tests/rings/ring0.sh runs make check, the determinism check, a health check against laptop.local:7400 and the live mind smoke, and exits 0",
         "shellcheck -S warning tests/rings/ring0.sh is clean"
@@ -183,8 +246,22 @@
       "title": "Ring 0 review",
       "owner": "agent",
       "effort": "high",
-      "design": ["1", "23.2"],
-      "depends_on": ["R0-02", "R0-03", "R0-04", "R0-05", "R0-06", "R0-07", "R0-08", "R0-09", "R0-10", "R0-11"],
+      "design": [
+        "1",
+        "23.2"
+      ],
+      "depends_on": [
+        "R0-02",
+        "R0-03",
+        "R0-04",
+        "R0-05",
+        "R0-06",
+        "R0-07",
+        "R0-08",
+        "R0-09",
+        "R0-10",
+        "R0-11"
+      ],
       "acceptance": [
         "every Ring 0 done-when line in DESIGN.md 23.2 is checked and holds",
         "tests/rings/ring0.sh exits 0",
@@ -198,10 +275,16 @@
       "title": "Matt opens the world in a browser",
       "owner": "human",
       "gates_ring": false,
-      "design": ["15"],
-      "depends_on": ["R0-review"],
+      "design": [
+        "15"
+      ],
+      "depends_on": [
+        "R0-review"
+      ],
       "instructions": "Open http://laptop.local:7400 on the Mac, place a few roads, and tell the next session what you think of the look. Away from home use http://laptop-ts:7400.",
-      "acceptance": ["Matt's notes are in plan/PLAYTEST.md"],
+      "acceptance": [
+        "Matt's notes are in plan/PLAYTEST.md"
+      ],
       "status": "todo"
     },
     {
@@ -210,8 +293,12 @@
       "title": "Plan Ring 1: first playable (one town, one rival, one resource, chat)",
       "owner": "agent",
       "effort": "high",
-      "design": ["23.2"],
-      "depends_on": ["R0-review"],
+      "design": [
+        "23.2"
+      ],
+      "depends_on": [
+        "R0-review"
+      ],
       "acceptance": [
         "Ring 1 items exist in plan/features.json, each with design refs, owner, effort and runnable acceptance checks",
         "Ring 1 ends with tests/rings/ring1.sh, R1-review, R1-playtest and R2-plan",

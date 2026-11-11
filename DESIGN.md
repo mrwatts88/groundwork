@@ -524,4 +524,5 @@ Accounts, a second human Op, the API backend, possibly a cloud host.
 | D-005 | 2026-11-11 | World server on the Fedora box, development on the Mac | Matt's choice. Free, always on, Tailscale for away |
 | D-006 | 2026-11-11 | Minds run through `claude -p` on the Fedora box by default. API backend kept behind the same interface | Matt's suggestion. Uses his subscription instead of an API bill. API is needed once other people play |
 | D-007 | 2026-11-11 | Medium economy: 12 goods, visible chains. Free-text chat with structured offers | Matt's choices |
+| D-009 | 2026-11-11 | The repo is public on GitHub (mrwatts88/groundwork) | Matt's choice. Secrets stay out of the repo (section 18), and a history scan runs before the first push |
 | D-008 | 2026-11-11 | First playable: one town, one rival, one resource, chat with a few NPCs | Matt's choice |

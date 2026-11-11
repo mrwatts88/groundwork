@@ -11,11 +11,11 @@ yet. A lean headless `claude -p` NPC call was proven on the Fedora box
 
 **In progress:** nothing.
 
-**Next (agent):** R0-03 workspace scaffold, then R0-04 sim core, R0-07 minds
-skeleton. R0-02 publishes the repo once Matt says yes (R0-01).
+**Next (agent):** R0-02 publish the public repo (Matt approved), then R0-03
+workspace scaffold, R0-04 sim core, R0-07 minds skeleton. `/autopilot` runs
+them back to back.
 
-**Waiting on Matt:**
-- R0-01 say yes to creating the private GitHub repo mrwatts88/groundwork.
+**Waiting on Matt:** nothing.
 
 **Blocked:** nothing.
 

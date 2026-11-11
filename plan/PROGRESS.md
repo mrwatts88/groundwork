@@ -20,3 +20,9 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
   box and is not on the non-interactive PATH. The Fedora box has Node 22 but no
   pnpm or corepack. Linger is on, so systemd user services survive logout.
 - **Next:** R0-03 workspace scaffold. Matt: R0-01.
+
+## 2026-11-11, setup session (continued)
+
+- **Did:** added /autopilot (main session stands in for Matt, builders and the verifier run as subagents). Matt activated the wider allowlist. Matt approved the GitHub repo and chose public (R0-01 done, D-009). R0-02 now checks PUBLIC and scans history for secrets before the first push.
+- **Learned:** subagents cannot spawn subagents, so the autopilot main session runs the verifier between builder and wrap. The auto-mode classifier blocks agents editing .claude/settings.json. Changes go in scripts/agent/claude-settings.json for Matt to copy.
+- **Next:** /autopilot from a fresh session in ~/code/groundwork, starting with R0-02.
