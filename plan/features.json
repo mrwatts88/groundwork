@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "about": "Groundwork work plan. Rolling wave: only the current ring is broken into items. Change status and evidence only, through scripts/agent/plan.py. See PROCESS.md.",
+  "items": [
+    {
+      "id": "R0-01",
+      "ring": 0,
+      "title": "Matt approves creating the private GitHub repo mrwatts88/groundwork",
+      "owner": "human",
+      "design": ["18"],
+      "depends_on": [],
+      "instructions": "Say yes in a session. Creating a GitHub repo is outward-facing, so it waits for your OK.",
+      "acceptance": ["Matt has said yes in a session, recorded in plan/PROGRESS.md"],
+      "status": "todo"
+    },
+    {
+      "id": "R0-02",
+      "ring": 0,
+      "title": "Publish the repo to private GitHub mrwatts88/groundwork and push main",
+      "owner": "agent",
+      "effort": "low",
+      "design": ["18"],
+      "depends_on": ["R0-01"],
+      "acceptance": [
+        "gh repo view mrwatts88/groundwork --json visibility -q .visibility prints PRIVATE",
+        "git rev-parse HEAD equals git ls-remote origin main",
+        "git status is clean"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-03",
+      "ring": 0,
+      "title": "pnpm workspace scaffold: protocol, sim, minds, server, client packages, TypeScript strict, Vitest, check-fast wired",
+      "owner": "agent",
+      "effort": "medium",
+      "design": ["12.2", "17", "19"],
+      "depends_on": [],
+      "acceptance": [
+        "ls packages prints client minds protocol server sim",
+        "every package tsconfig extends a root tsconfig with strict true",
+        "pnpm -s typecheck exits 0 and pnpm -s test runs at least one test per package and exits 0",
+        "make check-fast prints check-fast: ok and its output shows the typecheck and vitest runs",
+        "introducing a type error in packages/sim makes make check-fast exit non-zero (verifier tries it on a scratch copy or reverts it)",
+        "README.md and docs/dev.md exist and say how to install and run the checks"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-04",
+      "ring": 0,
+      "title": "Sim core: seeded map generation, tick, seeded RNG, the command API apply(state, command), one command (place_road), state hash",
+      "owner": "agent",
+      "effort": "medium",
+      "design": ["1", "4.2", "11.1", "12.2", "12.3"],
+      "depends_on": ["R0-03"],
+      "acceptance": [
+        "a Vitest determinism test advances a 128x128 seeded world 10000 ticks with a scripted command log twice and gets the same state hash",
+        "the same test run in two separate processes prints the same hash (a test:slow script or a small CLI the verifier runs twice)",
+        "a test rejects an invalid place_road (out of bounds, on water, on a parcel the Op does not own) with a typed error and leaves the state hash unchanged",
+        "a test in packages/sim fails if any source file under packages/sim/src contains Math.random, Date or performance.now",
+        "map generation from the same seed produces the same terrain and different seeds produce different terrain (tests)"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-05",
+      "ring": 0,
+      "title": "Server: clock (present, speed-up, away), WebSocket state and commands, SQLite snapshot plus command log, resume after restart, /health",
+      "owner": "agent",
+      "effort": "medium",
+      "design": ["11.1", "11.2", "12.1"],
+      "depends_on": ["R0-04"],
+      "acceptance": [
+        "an integration test starts the server with a fast clock, connects a WebSocket client, receives the initial state and tick updates",
+        "the test sends place_road over the WebSocket and sees it in the next state, and an invalid command returns an error message",
+        "the test stops the server, starts it again on the same data dir, and the road is still there and the tick count continues from where it stopped",
+        "GET /health returns JSON with tick, game date, clock mode and connected client count",
+        "a test shows the clock switches to away mode after the configured idle time with no client input, and back on input",
+        "clock rates and the data dir come from config, with defaults matching DESIGN.md 11.1"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-06",
+      "ring": 0,
+      "title": "Client: Vite + PixiJS isometric map from server state, pan and zoom, click to place a road, HUD with date and clock speed",
+      "owner": "agent",
+      "effort": "medium",
+      "design": ["15", "12.1"],
+      "depends_on": ["R0-05"],
+      "acceptance": [
+        "a Playwright smoke test starts a test server and the client, waits for the canvas, and saves a screenshot to test-results/",
+        "the screenshot shows an isometric terrain map with visibly different terrain types (verifier opens the image)",
+        "the smoke test clicks a land tile in road mode and the road appears in the next screenshot and in the server state",
+        "the HUD shows the game date and clock speed, read from the DOM by the test",
+        "the server serves the built client at / so one port does everything"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-07",
+      "ring": 0,
+      "title": "Minds skeleton: Mind interface, fake backend, claude -p backend, schema-validated output, budget governor counting calls",
+      "owner": "agent",
+      "effort": "medium",
+      "design": ["13.2", "13.4", "13.5"],
+      "depends_on": ["R0-03"],
+      "acceptance": [
+        "unit tests cover the fake backend replaying a recorded reply by prompt hash and returning schema-valid output",
+        "unit tests cover the claude -p backend against a stubbed process: it builds the exact flags in DESIGN.md 13.4, runs in an empty working dir, parses structured_output, and rejects malformed or schema-invalid output with a typed error",
+        "a unit test shows the governor refuses or defers calls past the per-hour limit and lets a conversation call through within its own limit",
+        "every call records a usage row (agent, backend, model, tokens, ms, ok) through an injected recorder",
+        "no test spawns the real claude binary (verifier greps the tests and runs them with claude off the PATH)"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-08",
+      "ring": 0,
+      "title": "Fedora box prep: pnpm without sudo, repo clone, claude path and a lean headless call checked",
+      "owner": "agent",
+      "effort": "low",
+      "design": ["18", "13.4"],
+      "depends_on": ["R0-02"],
+      "acceptance": [
+        "ssh -o BatchMode=yes laptop '~/.local/bin/pnpm --version' prints 10.x",
+        "ssh laptop 'git -C ~/code/groundwork rev-parse HEAD' equals the Mac's origin/main",
+        "the lean claude -p call from DESIGN.md 13.4, run over ssh from an empty dir, returns JSON with structured_output and under 3000 input plus cache tokens"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-09",
+      "ring": 0,
+      "title": "Deploy: scripts/deploy.sh, systemd user service on the Fedora box, nightly SQLite backup timer",
+      "owner": "agent",
+      "effort": "medium",
+      "design": ["18", "11.2"],
+      "depends_on": ["R0-06", "R0-08"],
+      "acceptance": [
+        "scripts/deploy.sh run on the Mac pulls, installs, builds and restarts the service on the Fedora box, then prints the health JSON",
+        "curl -s http://laptop.local:7400/health from the Mac returns JSON with a tick that increases over 10 seconds",
+        "after ssh laptop 'systemctl --user restart groundwork', the tick resumes at or above its value before the restart",
+        "systemctl --user is-enabled groundwork prints enabled, and the backup timer is listed by systemctl --user list-timers",
+        "running the backup service once writes a copy to ~/groundwork-backups/ and keeps at most 14",
+        "docs/dev.md has a Deploy section"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-10",
+      "ring": 0,
+      "title": "Live mind smoke on the Fedora box: one real claude -p call through the minds package",
+      "owner": "agent",
+      "effort": "low",
+      "design": ["13.4", "13.5", "17"],
+      "depends_on": ["R0-07", "R0-09"],
+      "acceptance": [
+        "ssh laptop 'cd ~/code/groundwork && ~/.local/bin/pnpm --filter @groundwork/minds smoke' makes one real call as a named NPC and prints a schema-valid reply",
+        "the smoke run records a usage row in the server's SQLite with tokens under 3000 and ok true",
+        "the smoke script is not part of pnpm test or make check"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-11",
+      "ring": 0,
+      "title": "tests/rings/ring0.sh: the end-to-end check the Ring 0 review runs",
+      "owner": "agent",
+      "effort": "low",
+      "design": ["23.2"],
+      "depends_on": ["R0-09", "R0-10"],
+      "acceptance": [
+        "tests/rings/ring0.sh runs make check, the determinism check, a health check against laptop.local:7400 and the live mind smoke, and exits 0",
+        "shellcheck -S warning tests/rings/ring0.sh is clean"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-review",
+      "ring": 0,
+      "title": "Ring 0 review",
+      "owner": "agent",
+      "effort": "high",
+      "design": ["1", "23.2"],
+      "depends_on": ["R0-02", "R0-03", "R0-04", "R0-05", "R0-06", "R0-07", "R0-08", "R0-09", "R0-10", "R0-11"],
+      "acceptance": [
+        "every Ring 0 done-when line in DESIGN.md 23.2 is checked and holds",
+        "tests/rings/ring0.sh exits 0",
+        "the commit is tagged ring-0"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R0-look",
+      "ring": 0,
+      "title": "Matt opens the world in a browser",
+      "owner": "human",
+      "gates_ring": false,
+      "design": ["15"],
+      "depends_on": ["R0-review"],
+      "instructions": "Open http://laptop.local:7400 on the Mac, place a few roads, and tell the next session what you think of the look. Away from home use http://laptop-ts:7400.",
+      "acceptance": ["Matt's notes are in plan/PLAYTEST.md"],
+      "status": "todo"
+    },
+    {
+      "id": "R1-plan",
+      "ring": 1,
+      "title": "Plan Ring 1: first playable (one town, one rival, one resource, chat)",
+      "owner": "agent",
+      "effort": "high",
+      "design": ["23.2"],
+      "depends_on": ["R0-review"],
+      "acceptance": [
+        "Ring 1 items exist in plan/features.json, each with design refs, owner, effort and runnable acceptance checks",
+        "Ring 1 ends with tests/rings/ring1.sh, R1-review, R1-playtest and R2-plan",
+        "scripts/agent/plan.py lint passes with plan/.planning removed"
+      ],
+      "status": "todo"
+    }
+  ]
+}

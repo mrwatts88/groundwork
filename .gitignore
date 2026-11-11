@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+*.db
+*.db-wal
+*.db-shm
+data/
+test-results/
+playwright-report/
+__pycache__/
+plan/.planning
+plan/features.json.tmp
+.DS_Store
