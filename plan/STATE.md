@@ -20,8 +20,7 @@ your land and watch the date and clock speed in the HUD. `make check` runs
 the Playwright smoke test. A lean headless `claude -p` NPC call was proven on the Fedora box
 (DESIGN.md 13.4). The Fedora box is prepped (R0-08): pnpm 10.14.0 in `~/.local/bin` and a clone at `~/code/groundwork`. The minds skeleton is in (R0-07): a Mind with a fake
 backend, a `claude -p` backend, schema-checked replies, a budget governor
-(120 calls per hour) and a usage row per call, written to the `mind_usage` table by
-`SqliteUsageRecorder`. A live smoke (R0-10) proved one real call on the box. Nothing schedules minds yet.
+(120 calls per hour) and a usage row per call in the `mind_usage` table. A live smoke (R0-10) proved one real call on the box. Nothing schedules minds yet.
 The world server runs on the Fedora box (R0-09) as the `groundwork` systemd
 user service at `http://laptop.local:7400`. Deploy with `scripts/deploy.sh`
 from the Mac. Backups go to `~/groundwork-backups/` nightly, keeping 14.
