@@ -139,3 +139,11 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R1-04. attention.test.ts 7 of 7, tsc guards fail on a missing cost entry, Playwright 3 of 3 reads 40/40 then 39/40. Determinism hash 8fcbcea33f2105bb matched in both processes. check-fast ran 131 tests.
 - **Learned:** checking and charging attention in `apply()`, around the handler, keeps every future command on one path. It works because handlers validate in full before changing anything. A missing snapshot field can default on load (format 3 saves get a full day), which avoids a WORLD_FORMAT bump and a world wipe. Python heredocs with backticks in Bash trip the safety check, so write edit scripts to the scratchpad.
 - **Next:** R1-05 staking.
+
+## 2026-11-11, R1-05 staking, roads on frontier, build sidebar
+
+- **Did:** `stake_claim` stakes one frontier tile: claim fee 200 (600 on a deposit), 3 attention, a 360 tick survey in `world.surveys`, then the tile is the Op's. It is refused with on_water, not_frontier, being_surveyed, out_of_bounds and insufficient_cash. Surveys are hashed, saved and sent in every delta. Format 3 saves without them load with none. `place_road` now takes frontier too and gives not_owner on others' land. The client has a `#sidebar` with Road (R) and Stake (C), draws surveys as a dashed outline with posts and a pennant, and has an inspector Survey row. The scenario log includes stakes. D-016 was added. README and docs/dev.md were updated.
+- **Verified:** verifier PASS R1-05. make check ok, 138 unit tests, determinism hash 12ef49bd8c1e8c8b, Playwright 4 of 4, including the fast-clock stake smoke (9-surveying.png, 10-staked.png).
+- **Learned:** a second Playwright webServer with a fast clock (port 8792, 25 ms ticks) runs timed checks such as a survey in about 9 s without touching the 250 ms server the other tests rely on. S already pans, so Stake is on C.
+- **Known issue:** the HUD message shown after a click (for example "owned by Nobody") does not update when a survey finishes. The inspector is correct. Not blocking.
+- **Next:** R1-06 the depot.

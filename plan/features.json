@@ -459,7 +459,9 @@
         "README How to play says how to stake land and that roads can cross the frontier",
         "make check passes"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-05. make check: 138 unit tests, determinism (hash 12ef49bd8c1e8c8b, scenario includes stakes), 4/4 Playwright incl. fast-clock stake smoke (9-surveying.png, 10-staked.png owner You). stake_claim fee 200/600, 3 attention, 360-tick survey, typed rejections hash-unchanged; place_road on frontier, not_owner elsewhere; README and docs/dev.md updated; D-016.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-06",
