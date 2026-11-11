@@ -380,7 +380,7 @@
         "a test shows people travel in the snapshot and the welcome state, and changing one person's parcel changes the state hash",
         "the determinism tests and pnpm test:slow still match across two processes"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R1-03",

@@ -8,8 +8,9 @@ function snapshot(): WorldSnapshot {
   for (const i of [5, 6, 9, 10]) owner[i] = 1;
   owner[15] = 2;
   owner[12] = 3;
+  owner[3] = 4;
   return {
-    format: 2,
+    format: 3,
     seed: 1,
     width: 4,
     height: 4,
@@ -29,8 +30,10 @@ function snapshot(): WorldSnapshot {
       { kind: "op", id: "player" },
       { kind: "op", id: "rival" },
       { kind: "town", id: "town" },
+      { kind: "person", id: "town-1" },
     ],
     town: { id: "town", name: "Harlow", market: 12 },
+    people: [{ id: "town-1", name: "Ada Marsh", job: "farmer", home: 12, traits: ["proud", "loyal"], asking: 120 }],
   };
 }
 
@@ -48,6 +51,7 @@ describe("ClientWorld", () => {
     expect(w.ownerName(5)).toBe("you");
     expect(w.ownerName(15)).toBe("rival");
     expect(w.ownerName(12)).toBe("Harlow");
+    expect(w.ownerName(3)).toBe("Ada Marsh");
   });
 
   it("applies a tick delta and reports the changed tiles", () => {

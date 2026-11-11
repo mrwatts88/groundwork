@@ -119,14 +119,11 @@ describe("Ring 1 world shape", () => {
       expect(["frontier", "op", "town", "person"]).toContain(party.kind);
       kinds.add(party.kind);
     }
-    expect([...kinds].sort()).toEqual(["frontier", "op", "town"]);
+    expect([...kinds].sort()).toEqual(["frontier", "op", "person", "town"]);
     expect(partyOf(world, 0)).toEqual({ kind: "frontier", id: "frontier" });
     expect(partyOf(world, partyIndex(world, "op", "rival"))).toEqual({ kind: "op", id: "rival" });
-    // The person kind is a valid owner. Named people arrive in R1-02.
-    world.parties.push({ kind: "person", id: "someone" });
-    const k = world.parties.length - 1;
-    world.owner[0] = k;
-    expect(tileOwner(world, 0)).toEqual({ kind: "person", id: "someone" });
+    const personTile = world.owner.findIndex((o) => partyOf(world, o).kind === "person");
+    expect(world.people.map((p) => p.id)).toContain(tileOwner(world, personTile).id);
     expect(() => partyOf(world, world.parties.length)).toThrow(/not a party/);
   });
 

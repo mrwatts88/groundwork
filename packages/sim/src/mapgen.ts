@@ -1,9 +1,11 @@
 // Seeded map generation (DESIGN.md 4.2, 4.3). Integer value noise for
 // elevation and moisture, then deposits scattered in the frontier, richer
 // farther out, then one town on good land near water, then a starting claim
-// for each Op. Integer math only, so every platform agrees.
+// for each Op, then the town's named people and their land (people.ts).
+// Integer math only, so every platform agrees.
 
 import { TERRAIN, type OpId, type Party } from "@groundwork/protocol";
+import { placePeople } from "./people.ts";
 import { createRng, nextInt, type Rng } from "./rng.ts";
 import { NO_OWNER, ROAD_BUILT, type Op, type World } from "./world.ts";
 
@@ -241,10 +243,12 @@ export function createWorld(options: WorldOptions): World {
     parties,
     // The market tile is set once the town is placed.
     town: { id: TOWN_ID, name: townName, market: -1 },
+    people: [],
   };
   scatterDeposits(world);
   const market = placeTown(world, parties.length - 1);
   const placed: World = { ...world, town: { ...world.town, market } };
   placeClaims(placed);
+  placePeople(placed);
   return placed;
 }

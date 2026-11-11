@@ -120,6 +120,12 @@ describe("server", () => {
     expect(welcome.state.ops.map((o) => o.id)).toEqual([PLAYER_OP, RIVAL_OP]);
     expect(welcome.state.format).toBe(WORLD_FORMAT);
     expect(welcome.state.town.name.length).toBeGreaterThan(0);
+    // Named people travel in the welcome state, each one an owner party.
+    expect(welcome.state.people).toHaveLength(6);
+    expect(welcome.state.people).toEqual(server.game.world.people);
+    for (const person of welcome.state.people) {
+      expect(welcome.state.parties).toContainEqual({ kind: "person", id: person.id });
+    }
     const first = await client.next(isTick);
     const second = await client.next(isTick);
     expect(second.tick).toBe(first.tick + 1);
@@ -292,7 +298,7 @@ describe("server", () => {
 
 /** A data dir as Ring 0 left it: its schema, a format-less snapshot of a one-Op world, a command, a tick. */
 function writeRing0Db(dir: string): Buffer {
-  const { format: _f, parties: _p, town: _t, ...ring1 } = toSnapshot(
+  const { format: _f, parties: _p, town: _t, people: _pe, ...ring1 } = toSnapshot(
     createWorld({ seed: 5, width: 64, height: 64, ops: [PLAYER_OP] }),
   );
   const ring0 = { ...ring1, tick: 1440 };

@@ -72,7 +72,8 @@ tick, the game date, the clock, the town's name and the Op ids.
 The store records a world format version (`WORLD_FORMAT` in
 `packages/sim/src/world.ts`). If the db file holds an older format, the server
 keeps it as `groundwork.format-<N>.db` in the same folder and starts a fresh
-world. A Ring 0 file has no version and counts as format 1.
+world. A Ring 0 file has no version and counts as format 1. Format 2 had the
+town and the rival. Format 3 added the town's named people.
 
 Every setting comes from an environment variable. The defaults match
 DESIGN.md 11.1 and 11.2.

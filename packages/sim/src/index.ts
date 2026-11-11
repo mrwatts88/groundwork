@@ -19,6 +19,15 @@ export {
   TOWN_WATER_RANGE,
   type WorldOptions,
 } from "./mapgen.ts";
+export {
+  ASKING_MAX,
+  ASKING_MIN,
+  DEPOSIT_REACH,
+  LANDOWNERS,
+  PARCEL_SIZE,
+  PEOPLE_PER_TOWN,
+  PERSONALITY_TRAITS,
+} from "./people.ts";
 export { run, type RunReport } from "./replay.ts";
 export { fromSnapshot, toSnapshot } from "./snapshot.ts";
 export { createRng, nextInt, nextU32, type Rng } from "./rng.ts";
@@ -45,6 +54,7 @@ export {
   WORLD_FORMAT,
   type Build,
   type Op,
+  type Person,
   type Town,
   type World,
 } from "./world.ts";

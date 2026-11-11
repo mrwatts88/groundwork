@@ -129,6 +129,22 @@ export interface TownState {
   readonly market: number;
 }
 
+/**
+ * A named person (DESIGN.md 7.1). Their land is the tiles their party owns.
+ * Traits come from a fixed list in the sim. asking is a percent applied to
+ * the base price of land when they sell (100 is a fair price).
+ */
+export interface PersonState {
+  /** Also their party id. */
+  readonly id: string;
+  readonly name: string;
+  readonly job: string;
+  /** Tile index of their home, on town land. */
+  readonly home: number;
+  readonly traits: readonly string[];
+  readonly asking: number;
+}
+
 export interface BuildState {
   readonly tile: number;
   readonly remaining: number;
@@ -150,6 +166,8 @@ export interface WorldSnapshot {
   readonly builds: readonly BuildState[];
   readonly parties: readonly Party[];
   readonly town: TownState;
+  /** The town's named people, in creation order. */
+  readonly people: readonly PersonState[];
 }
 
 /** A changed tile: [tile index, new value]. */

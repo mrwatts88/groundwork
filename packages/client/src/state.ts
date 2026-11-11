@@ -2,7 +2,7 @@
 // current with tick deltas. The server is the authority. The client never
 // changes this except from server messages.
 
-import type { ClockStatus, OpState, Party, TownState, WorldDelta, WorldSnapshot } from "@groundwork/protocol";
+import type { ClockStatus, OpState, Party, PersonState, TownState, WorldDelta, WorldSnapshot } from "@groundwork/protocol";
 
 /** The player's Op id. Matches PLAYER_OP on the server. */
 export const PLAYER_OP = "player";
@@ -21,6 +21,7 @@ export class ClientWorld {
   /** Owner values index this list. 0 is frontier. */
   readonly parties: readonly Party[];
   readonly town: TownState;
+  readonly people: readonly PersonState[];
   tick: number;
   date: string;
   clock: ClockStatus;
@@ -34,6 +35,7 @@ export class ClientWorld {
     this.ops = state.ops;
     this.parties = state.parties;
     this.town = state.town;
+    this.people = state.people;
     this.tick = state.tick;
     this.date = date;
     this.clock = clock;
@@ -77,6 +79,7 @@ export class ClientWorld {
     const party = this.parties[owner];
     if (party === undefined || party.kind === "frontier") return "nobody";
     if (party.kind === "town") return this.town.name;
+    if (party.kind === "person") return this.people.find((p) => p.id === party.id)?.name ?? party.id;
     return party.id;
   }
 

@@ -70,5 +70,15 @@ export function hashWorld(world: World): string {
   h.str(world.town.id);
   h.str(world.town.name);
   h.int(world.town.market);
+  h.u32(world.people.length);
+  for (const person of world.people) {
+    h.str(person.id);
+    h.str(person.name);
+    h.str(person.job);
+    h.int(person.home);
+    h.u32(person.traits.length);
+    for (const trait of person.traits) h.str(trait);
+    h.int(person.asking);
+  }
   return h.hex();
 }

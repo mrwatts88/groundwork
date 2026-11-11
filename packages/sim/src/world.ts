@@ -1,7 +1,7 @@
 // World state (DESIGN.md 4.2, 6.1). Plain data with integer fields only, so it
 // hashes and replays bit for bit.
 
-import type { OpId, Party, PartyKind } from "@groundwork/protocol";
+import type { OpId, Party, PartyKind, PersonState } from "@groundwork/protocol";
 import type { Rng } from "./rng.ts";
 
 export interface Op {
@@ -23,8 +23,9 @@ export const ROAD_BUILT = 2;
 /**
  * The world format version. Bump it when a saved world can no longer be
  * loaded by this code. Ring 0 worlds are format 1 and carry no version.
+ * Format 3 added named people.
  */
-export const WORLD_FORMAT = 2;
+export const WORLD_FORMAT = 3;
 
 /** Owner value for land no one holds: party 0, frontier. */
 export const NO_OWNER = 0;
@@ -35,6 +36,9 @@ export interface Town {
   /** Tile index of the market. */
   readonly market: number;
 }
+
+/** A named person (DESIGN.md 7.1). Their party id is their id. */
+export type Person = PersonState;
 
 export interface World {
   readonly seed: number;
@@ -61,6 +65,8 @@ export interface World {
    */
   readonly parties: Party[];
   readonly town: Town;
+  /** The town's named people, in creation order. Each is also a party. */
+  readonly people: Person[];
 }
 
 export function tileIndex(world: World, x: number, y: number): number {

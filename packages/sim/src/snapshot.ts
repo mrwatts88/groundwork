@@ -1,8 +1,12 @@
 // World <-> plain data, for SQLite snapshots and the initial state sent to a
 // client (DESIGN.md 11.2). Pure: no I/O here, the server does the storing.
 
-import type { WorldSnapshot } from "@groundwork/protocol";
-import { WORLD_FORMAT, type World } from "./world.ts";
+import type { PersonState, WorldSnapshot } from "@groundwork/protocol";
+import { WORLD_FORMAT, type Person, type World } from "./world.ts";
+
+function copyPerson(p: PersonState): Person {
+  return { id: p.id, name: p.name, job: p.job, home: p.home, traits: [...p.traits], asking: p.asking };
+}
 
 export function toSnapshot(world: World): WorldSnapshot {
   return {
@@ -20,6 +24,7 @@ export function toSnapshot(world: World): WorldSnapshot {
     builds: world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     parties: world.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: world.town.id, name: world.town.name, market: world.town.market },
+    people: world.people.map(copyPerson),
   };
 }
 
@@ -39,6 +44,11 @@ export function fromSnapshot(s: WorldSnapshot): World {
       throw new Error(`snapshot owner ${owner} is not one of ${s.parties.length} parties`);
     }
   }
+  for (const person of s.people) {
+    if (!s.parties.some((p) => p.kind === "person" && p.id === person.id)) {
+      throw new Error(`snapshot person ${person.id} is not a party`);
+    }
+  }
   return {
     seed: s.seed,
     width: s.width,
@@ -53,5 +63,6 @@ export function fromSnapshot(s: WorldSnapshot): World {
     builds: s.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     parties: s.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: s.town.id, name: s.town.name, market: s.town.market },
+    people: s.people.map(copyPerson),
   };
 }
