@@ -20,6 +20,7 @@ pnpm install
 | `pnpm -s test` | Runs every unit test with Vitest from the repo root. |
 | `pnpm exec vitest` | Vitest in watch mode while you work. |
 | `pnpm --filter @groundwork/minds smoke` | One real `claude -p` call as the NPC Ada Fenwick. Writes a `mind_usage` row to the world SQLite. Spends real budget, so it is not in any check. Run it on the Fedora box. |
+| `tests/rings/ring0.sh` | The Ring 0 end-to-end check, run from the Mac: `make check`, determinism, `/health` on `laptop.local:7400` and the live mind smoke over ssh. Spends one real call. |
 
 If `node_modules` is missing, `make check-fast` runs `pnpm install` first.
 
