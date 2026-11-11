@@ -7,7 +7,9 @@ Follow PROCESS.md section 3.1 step 6. Do these in order and do not skip any.
 
 1. **Verify independently.** Spawn the `verifier` subagent with the item id.
    Give it only the id. If it reports FAIL, fix the problem and run it again.
-   Never mark an item done on your own judgment.
+   Never mark an item done on your own judgment. Under autopilot the
+   autopilot runs the verifier and hands you its report. Use that report and
+   skip this step.
 2. **Clean tree.** `make check-fast` is green. No stray files, no debug code,
    no half-finished parts. Anything not done is finished now or split out
    (`scripts/agent/plan.py block <id> --reason "split: ..."`) with the

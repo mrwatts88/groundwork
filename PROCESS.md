@@ -72,6 +72,18 @@ cd ~/code/groundwork && claude
 If an item is bigger than one session, finish a coherent part, block the item
 with reason "split: ...", and describe the rest in PROGRESS.md.
 
+### 3.1a Autopilot (`/autopilot [max items]`)
+
+Runs many items in one sitting without Matt. The main session stands in for
+Matt and never builds. For each item it spawns a fresh builder subagent at the
+item's effort, which follows `/next` and reports `READY`. The main session
+then spawns the verifier, sends a FAIL back to the builder to fix, and on PASS
+tells the builder to wrap. Subagents cannot spawn subagents, which is why the
+main session runs the verifier. It stops when nothing is actionable, when
+something needs Matt, after three FAILs on one item, or at the item limit, and
+reports what he can now play and what is waiting on him. Details in
+`.claude/skills/autopilot/SKILL.md`.
+
 ### 3.2 Ring planning (`/plan-ring N`)
 
 Runs when `plan.py next` offers `RN-plan`, at high effort. Breaks ring N into

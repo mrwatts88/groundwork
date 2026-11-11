@@ -11,6 +11,8 @@ file.
 2. `make check-fast` before anything new. A red clean tree is the first item.
 3. One item: `scripts/agent/plan.py start <id>`, build it, verify it, `/wrap`.
 4. Never stop with uncommitted or half-done work. Split the item instead.
+5. `/autopilot` runs items back to back in subagents. Under autopilot a
+   builder replies `READY <id>` instead of spawning the verifier itself.
 
 ## Commands
 
