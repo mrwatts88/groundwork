@@ -21,12 +21,11 @@ world has one town with roads and a market, 6x6 claims for player and rival
 owning a 4x4 parcel, one near a deposit (D-014). WORLD_FORMAT is 3. The server
 runs the clock, SQLite snapshots and the command log, and resumes exactly.
 Minds have fake and `claude -p` backends and a governor, not yet scheduled.
-`/health` has the town name and the Op ids. The client has an inspector
-panel, an ownership overlay and town buildings. The rival's display name is
-config (`GROUNDWORK_RIVAL_NAME`), sent in `welcome` as `opNames`. Service: Fedora box, port 7400.
+`/health` has the town and Op ids. The client has an inspector, an ownership
+overlay and town buildings. The rival's name is config (`GROUNDWORK_RIVAL_NAME`),
+sent in `welcome` as `opNames`. Service: Fedora box, port 7400.
 **Next (agent):** R1-04, attention points and the HUD, then R1-05 staking.
-**Waiting on Matt:** R0-look. Open the world, place a few roads, and add notes
-on the look to plan/PLAYTEST.md. It blocks nothing.
+**Waiting on Matt:** R0-look. Open the world and add notes to plan/PLAYTEST.md.
 **In progress, blocked:** nothing.
 **Notes for the next session:** the Ring 1 rules are DESIGN.md 23.2 done-when
 and decision D-012. Plan order is build order. Development is on the Mac. On
