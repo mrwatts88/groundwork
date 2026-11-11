@@ -1,7 +1,7 @@
 // Integration: a real server on a free port with a fast clock, a real
 // WebSocket client and a real SQLite file in a temp dir.
 
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -11,6 +11,7 @@ import { WebSocket } from "ws";
 import { loadConfig, type ServerConfig } from "./config.ts";
 import { PLAYER_OP } from "./game.ts";
 import { startServer, type Health, type RunningServer } from "./server.ts";
+import { resolveStatic } from "./static.ts";
 
 const dirs: string[] = [];
 const servers: RunningServer[] = [];
@@ -253,5 +254,42 @@ describe("server", () => {
     const fast = server.health().tick - t1;
     expect(fast).toBeGreaterThan(slow * 2);
     client.close();
+  });
+
+  it("serves the built client at / on the same port as the WebSocket", async () => {
+    const clientDir = tempDir();
+    writeFileSync(join(clientDir, "index.html"), "<!doctype html><title>Groundwork</title>");
+    mkdirSync(join(clientDir, "assets"));
+    writeFileSync(join(clientDir, "assets", "main-abc.js"), "console.log(1)");
+    const server = await start(testConfig(tempDir(), { clientDir }));
+    const base = `http://127.0.0.1:${server.port}`;
+    const index = await fetch(`${base}/`);
+    expect(index.status).toBe(200);
+    expect(index.headers.get("content-type")).toMatch(/text\/html/);
+    expect(await index.text()).toContain("<title>Groundwork</title>");
+    const js = await fetch(`${base}/assets/main-abc.js`);
+    expect(js.status).toBe(200);
+    expect(js.headers.get("content-type")).toMatch(/javascript/);
+    expect((await fetch(`${base}/assets/missing.js`)).status).toBe(404);
+    expect((await fetch(`${base}/%2e%2e/%2e%2e/etc/passwd`)).status).toBe(404);
+    expect((await getHealth(server.port)).ok).toBe(true);
+  });
+
+  it("says how to build the client when it is missing", async () => {
+    const server = await start(testConfig(tempDir(), { clientDir: join(tempDir(), "no-dist") }));
+    const res = await fetch(`http://127.0.0.1:${server.port}/`);
+    expect(res.status).toBe(503);
+    expect(await res.text()).toMatch(/client build/);
+  });
+});
+
+describe("resolveStatic", () => {
+  it("maps / to index.html and refuses paths that leave the root", () => {
+    expect(resolveStatic("/srv/c", "/")).toBe(join("/srv/c", "index.html"));
+    expect(resolveStatic("/srv/c", "/assets/a.js?v=1")).toBe(join("/srv/c", "assets", "a.js"));
+    expect(resolveStatic("/srv/c", "/../secret")).toBeUndefined();
+    expect(resolveStatic("/srv/c", "/%2e%2e/secret")).toBeUndefined();
+    expect(resolveStatic("/srv/c", "/a%00b")).toBeUndefined();
+    expect(resolveStatic("/srv/c", "/%E0%A4%A")).toBeUndefined();
   });
 });

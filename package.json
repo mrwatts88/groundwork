@@ -9,9 +9,11 @@
   "scripts": {
     "typecheck": "pnpm -r --workspace-concurrency=1 typecheck",
     "test": "vitest run",
-    "test:slow": "bash scripts/check-determinism.sh"
+    "test:slow": "bash scripts/check-determinism.sh && pnpm --filter @groundwork/client smoke",
+    "build": "pnpm --filter @groundwork/client build"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@types/node": "^22.20.5",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"

@@ -7,9 +7,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "dev": "vite",
+    "build": "vite build",
+    "smoke": "vite build && playwright test -c playwright.config.ts"
   },
   "dependencies": {
-    "@groundwork/protocol": "workspace:*"
+    "@groundwork/protocol": "workspace:*",
+    "pixi.js": "^8.23.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
   }
 }

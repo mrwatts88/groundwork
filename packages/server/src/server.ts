@@ -1,5 +1,6 @@
 // HTTP plus WebSocket front of the world (DESIGN.md 12.1). The client sends
-// commands and receives state deltas. GET /health reports the clock.
+// commands and receives state deltas. GET /health reports the clock. Every
+// other GET serves the built client, so one port does everything.
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
@@ -15,6 +16,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { Clock } from "./clock.ts";
 import type { ServerConfig } from "./config.ts";
 import { Game } from "./game.ts";
+import { serveStatic } from "./static.ts";
 import { Store } from "./store.ts";
 
 export interface Health {
@@ -94,8 +96,26 @@ export async function startServer(config: ServerConfig, now: () => number = Date
       res.end(JSON.stringify(health()));
       return;
     }
-    res.writeHead(404, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: false, error: "not found" }));
+    const notFound = (): void => {
+      if (res.headersSent) return;
+      if (req.url === "/" || req.url === "/index.html") {
+        res.writeHead(503, { "content-type": "text/plain; charset=utf-8" });
+        res.end("The client is not built. Run: pnpm --filter @groundwork/client build\n");
+        return;
+      }
+      res.writeHead(404, { "content-type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: "not found" }));
+    };
+    if ((req.method === "GET" || req.method === "HEAD") && req.url !== undefined) {
+      serveStatic(config.clientDir, req.url, res).then(
+        (served) => {
+          if (!served) notFound();
+        },
+        () => notFound(),
+      );
+      return;
+    }
+    notFound();
   });
 
   const wss = new WebSocketServer({ server: http, path: "/ws" });

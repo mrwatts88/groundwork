@@ -13,7 +13,9 @@ pnpm install
 | Command | What it does |
 |---|---|
 | `make check-fast` | Plan lint, script syntax, typecheck of every package, unit tests. Runs at the start of every session. |
-| `make check` | `check-fast` plus the slow suites (determinism, scenario, soak, client smoke) once they exist. |
+| `make check` | `check-fast` plus the slow suites: cross-process determinism and the client smoke test. |
+| `pnpm build` | Builds the client into `packages/client/dist`, which the server serves at `/`. |
+| `pnpm --filter @groundwork/client smoke` | Builds the client and runs the Playwright smoke test. Screenshots land in `test-results/smoke/`. |
 | `pnpm -s typecheck` | Runs `tsc` in each package, one after another. |
 | `pnpm -s test` | Runs every unit test with Vitest from the repo root. |
 | `pnpm exec vitest` | Vitest in watch mode while you work. |
@@ -56,7 +58,8 @@ Mind backend and never call a real model.
 pnpm --filter @groundwork/server start
 ```
 
-It serves `GET /health` and a WebSocket at `/ws` on port 8787. pnpm runs the
+It serves the built client at `/`, `GET /health` and a WebSocket at `/ws`, all
+on port 8787. Run `pnpm build` first, or `/` answers with a note saying to. pnpm runs the
 script from `packages/server`, so the world lives in
 `packages/server/data/groundwork.db`. Set `GROUNDWORK_DATA_DIR` to put it
 somewhere else. The store is SQLite through `node:sqlite`, so there is nothing
@@ -78,6 +81,7 @@ DESIGN.md 11.1 and 11.2.
 | `GROUNDWORK_AWAY_AFTER_MS` | 900000 | Idle time before the away clock (15 minutes) |
 | `GROUNDWORK_AWAY_RATE` | 0.25 | Clock rate while away (1 game day per 4 real hours) |
 | `GROUNDWORK_SNAPSHOT_EVERY_TICKS` | 1440 | Ticks between snapshots (1 game day) |
+| `GROUNDWORK_CLIENT_DIR` | packages/client/dist | The built client served at `/` |
 
 ### Clock
 
@@ -102,6 +106,46 @@ with the full world on connect, a `tick` with the delta every tick,
 `command_result` for every command, and `error` for a message it cannot
 parse. Every accepted command is stamped with the current tick, which is
 where a replay applies it.
+
+## The client
+
+`packages/client` is Vite plus PixiJS (DESIGN.md 15). It opens a WebSocket to
+`/ws` on the host that served the page, builds its copy of the world from
+`welcome` and keeps it current from each `tick` delta. It never changes the
+world itself. It sends commands and the server decides.
+
+| File | Holds |
+|---|---|
+| `src/iso.ts` | The 2:1 projection (64 x 32 px tiles) and the camera |
+| `src/state.ts` | The client copy of the world, built from server messages |
+| `src/render.ts` | The Pixi map: 16 x 16 tile chunks, redrawn on change, culled off screen |
+| `src/net.ts` | The WebSocket link, with reconnect |
+| `src/main.ts` | Input, the HUD and wiring |
+
+Placeholder art is flat shapes drawn in code. Your land has a yellow border,
+rival land a red one. A road under construction is a pale diamond, a finished
+road a dark one.
+
+Controls: drag or the arrow keys pan, the wheel or `+`/`-` zoom, Home centres
+on your land, `R` or the Road button toggles road mode, Esc leaves it. In road
+mode a click orders a road on that tile. Outside road mode a click shows what
+the tile is in the HUD. The HUD shows the game date, the clock (speed and
+mode), speed buttons and cash.
+
+For live reload while working on the client, run the server on 8787 and
+`pnpm --filter @groundwork/client dev`. Vite proxies `/ws` and `/health` to it.
+
+`window.groundwork` exposes the client state, the camera and
+`tileToClient(x, y)` for the smoke test and for poking at in the console.
+
+### Smoke test
+
+`packages/client/e2e/smoke.spec.ts` starts a fresh test server on port 8791
+(`packages/server/scripts/test-server.ts`, data in `test-results/smoke-data`)
+that serves the built client. It checks the HUD date and clock speed, zooms
+and pans, saves `test-results/smoke/1-map.png`, places a road on the
+player's land with a click and checks it on screen (`3-road.png`) and on the
+server. Install the browser once with `pnpm exec playwright install chromium`.
 
 ## Adding things
 

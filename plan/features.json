@@ -136,7 +136,7 @@
         "the HUD shows the game date and clock speed, read from the DOM by the test",
         "the server serves the built client at / so one port does everything"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-07",

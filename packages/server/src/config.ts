@@ -1,6 +1,11 @@
 // Server config (DESIGN.md 11.1, 11.2). Defaults match the design. Every value
 // can be overridden from the environment, and tests pass their own.
 
+import { fileURLToPath } from "node:url";
+
+/** The built client, next to this package in the workspace. */
+export const DEFAULT_CLIENT_DIR = fileURLToPath(new URL("../../client/dist", import.meta.url));
+
 export interface ServerConfig {
   /** HTTP and WebSocket port. 0 picks a free port. */
   readonly port: number;
@@ -20,6 +25,8 @@ export interface ServerConfig {
   readonly awayRate: number;
   /** Ticks between snapshots. One game day. */
   readonly snapshotEveryTicks: number;
+  /** The built client (index.html and assets), served at /. */
+  readonly clientDir: string;
 }
 
 export const DEFAULT_CONFIG: ServerConfig = {
@@ -33,6 +40,7 @@ export const DEFAULT_CONFIG: ServerConfig = {
   awayAfterMs: 15 * 60 * 1000,
   awayRate: 0.25,
   snapshotEveryTicks: 1440,
+  clientDir: DEFAULT_CLIENT_DIR,
 };
 
 const ENV: Readonly<Record<keyof ServerConfig, string>> = {
@@ -46,6 +54,7 @@ const ENV: Readonly<Record<keyof ServerConfig, string>> = {
   awayAfterMs: "GROUNDWORK_AWAY_AFTER_MS",
   awayRate: "GROUNDWORK_AWAY_RATE",
   snapshotEveryTicks: "GROUNDWORK_SNAPSHOT_EVERY_TICKS",
+  clientDir: "GROUNDWORK_CLIENT_DIR",
 };
 
 function num(env: Readonly<Record<string, string | undefined>>, key: string, fallback: number): number {
@@ -72,6 +81,7 @@ export function loadConfig(
     awayAfterMs: num(env, ENV.awayAfterMs, d.awayAfterMs),
     awayRate: num(env, ENV.awayRate, d.awayRate),
     snapshotEveryTicks: num(env, ENV.snapshotEveryTicks, d.snapshotEveryTicks),
+    clientDir: env[ENV.clientDir] || d.clientDir,
     ...overrides,
   };
   if (config.tickMs <= 0) throw new Error("tickMs must be positive");
