@@ -27,7 +27,10 @@ describe("determinism", () => {
     const b = scenarioWorld();
     // Drop every command for one tile, so that tile never gets a road.
     const gone = logA.find(
-      (e) => e.command.x >= 0 && e.command.x < SCENARIO_SIZE && a.owner[e.command.y * SCENARIO_SIZE + e.command.x] !== 0,
+      (e) =>
+        e.command.x >= 0 &&
+        e.command.x < SCENARIO_SIZE &&
+        a.parties[a.owner[e.command.y * SCENARIO_SIZE + e.command.x]!]!.kind === "op",
     )!.command;
     const logB = scenarioLog(b).filter((e) => e.command.x !== gone.x || e.command.y !== gone.y);
     expect(logB.length).toBeLessThan(logA.length);

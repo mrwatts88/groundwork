@@ -21,6 +21,7 @@ export const TERRAIN_COLOR: Readonly<Record<number, number>> = {
 
 const PLAYER_BORDER = 0xffd23f;
 const RIVAL_BORDER = 0xe0533d;
+const TOWN_BORDER = 0xf4f1e8;
 const ROAD_BUILT_COLOR = 0x4a4038;
 const ROAD_BUILDING_COLOR = 0xd9c39a;
 
@@ -182,7 +183,8 @@ export class MapRenderer {
 
     const owner = w.owner[i]!;
     if (owner !== 0) {
-      const color = owner === w.playerOwner() ? PLAYER_BORDER : RIVAL_BORDER;
+      const kind = w.parties[owner]?.kind;
+      const color = owner === w.playerOwner() ? PLAYER_BORDER : kind === "town" ? TOWN_BORDER : RIVAL_BORDER;
       const d = diamond(x, y);
       // Edges T-R, R-B, B-L, L-T border tiles (x, y-1), (x+1, y), (x, y+1), (x-1, y).
       const edges: readonly (readonly [number, number, number, number])[] = [

@@ -253,7 +253,8 @@ one era.
 
 The server runs 24/7 on the Fedora box (section 18). State lives in SQLite:
 a snapshot every game day plus the command log since. Restarting resumes
-exactly. The client is a view and holds nothing that matters.
+exactly. The store records a world format version. A save in an older
+format is kept under a new name and a fresh world starts. The client is a view and holds nothing that matters.
 
 ### 11.3 Foreman, standing orders and the briefing
 
@@ -550,3 +551,4 @@ Accounts, a second human Op, the API backend, possibly a cloud host.
 | D-010 | 2026-11-11 | The server stores SQLite through Node's built-in `node:sqlite` and serves WebSockets with `ws`. Client messages are checked by hand-written parsers in protocol for now | No native module to build on the Fedora box. `ws` is small and standard. Zod can replace the parsers when the command set grows |
 | D-011 | 2026-11-11 | No privacy rules for this repo. Matt's name and email are fine anywhere, and public actions on it are routine. The only rule left is section 18: credentials never enter the repo | Matt: "there's no secrecy going on here." The old rules came from another project |
 | D-012 | 2026-11-11 | Ring 1 ore loop. A harvester carries ore from a deposit the Op owns to its depot. A truck carries it from the depot to the town market and sells on arrival. Roads can be laid on your own land and on frontier, and in Ring 1 every road is open to every vehicle. A tile's owner is a party: frontier, an Op, the town or a named person. Reflex actors (the rival, landowners, the town) act through `apply()` inside the tick and are not logged, because replay recreates them. Mind output is logged as commands, and a Mind may only issue commands as its own entity. The town grows on ore, standing in for building materials until Ring 3. Labor is a hiring cost in the build price plus a daily wage. The Ring 0 world on the Fedora box is replaced by a fresh one and its db file is kept | Thinnest loop that keeps transport physical (5.2) and every actor on the one command API (invariant 1). Access rules for roads wait for Ring 3. The Ring 0 world has no economy worth keeping |
+| D-013 | 2026-11-11 | A tile's owner value indexes a party list in the world state: frontier at 0, then the Ops, then the town, then named people. The town starts as a 7 x 7 block on the dry, deposit-free site nearest the map centre whose every tile has water within 6 tiles, with a road cross and the market beside the crossing. Starting claims keep 3 tiles clear of it. A save carries a world format version (Ring 1 is 2) and an older save is renamed `groundwork.format-<N>.db` | One lookup answers who owns a tile for every kind of owner, and adding people or towns adds parties without a new tile layer. Room around the town lets it grow onto frontier (R1-10). The version check is how D-012's world replacement happens without a manual step |

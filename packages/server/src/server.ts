@@ -1,5 +1,6 @@
 // HTTP plus WebSocket front of the world (DESIGN.md 12.1). The client sends
-// commands and receives state deltas. GET /health reports the clock. Every
+// commands and receives state deltas. GET /health reports the clock, the town
+// and the Ops. Every
 // other GET serves the built client, so one port does everything.
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -11,7 +12,7 @@ import {
   type ClockStatus,
   type ServerMessage,
 } from "@groundwork/protocol";
-import { hashWorld, toSnapshot } from "@groundwork/sim";
+import { hashWorld, toSnapshot, WORLD_FORMAT } from "@groundwork/sim";
 import { WebSocket, WebSocketServer } from "ws";
 import { Clock } from "./clock.ts";
 import type { ServerConfig } from "./config.ts";
@@ -25,18 +26,24 @@ export interface Health {
   readonly date: string;
   readonly clock: ClockStatus;
   readonly clients: number;
+  /** The town's name. */
+  readonly town: string;
+  /** Every Op id, in world order. */
+  readonly ops: readonly string[];
 }
 
 export interface RunningServer {
   readonly port: number;
   readonly game: Game;
+  /** The name an old-format db file was kept under at startup, if one was found. */
+  readonly archived: string | undefined;
   health(): Health;
   hash(): string;
   close(): Promise<void>;
 }
 
 export async function startServer(config: ServerConfig, now: () => number = Date.now): Promise<RunningServer> {
-  const store = new Store(config.dataDir);
+  const store = new Store(config.dataDir, WORLD_FORMAT);
   const game = new Game(store, config);
   const clock = new Clock(config, now());
   const clients = new Set<WebSocket>();
@@ -53,6 +60,8 @@ export async function startServer(config: ServerConfig, now: () => number = Date
     date: formatGameDate(game.world.tick),
     clock: clock.status(now()),
     clients: clients.size,
+    town: game.world.town.name,
+    ops: game.world.ops.map((op) => op.id),
   });
 
   // Ticks are scheduled one at a time, so a rate change takes effect at once.
@@ -158,6 +167,7 @@ export async function startServer(config: ServerConfig, now: () => number = Date
   return {
     port: (http.address() as AddressInfo).port,
     game,
+    archived: store.archived,
     health,
     hash: () => hashWorld(game.world),
     close: async () => {

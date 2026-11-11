@@ -1,17 +1,19 @@
 // Integration: a real server on a free port with a fast clock, a real
 // WebSocket client and a real SQLite file in a temp dir.
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { afterEach, describe, expect, it } from "vitest";
 import { TERRAIN, type ServerMessage, type WorldSnapshot } from "@groundwork/protocol";
-import { ROAD_BUILDING, ROAD_NONE } from "@groundwork/sim";
+import { createWorld, ROAD_BUILDING, ROAD_NONE, toSnapshot, WORLD_FORMAT } from "@groundwork/sim";
 import { WebSocket } from "ws";
 import { loadConfig, type ServerConfig } from "./config.ts";
-import { PLAYER_OP } from "./game.ts";
+import { PLAYER_OP, RIVAL_OP } from "./game.ts";
 import { startServer, type Health, type RunningServer } from "./server.ts";
 import { resolveStatic } from "./static.ts";
+import { DB_FILE, Store } from "./store.ts";
 
 const dirs: string[] = [];
 const servers: RunningServer[] = [];
@@ -115,7 +117,9 @@ describe("server", () => {
 
     const welcome = await client.next(isWelcome);
     expect(welcome.state.width).toBe(64);
-    expect(welcome.state.ops.map((o) => o.id)).toEqual([PLAYER_OP]);
+    expect(welcome.state.ops.map((o) => o.id)).toEqual([PLAYER_OP, RIVAL_OP]);
+    expect(welcome.state.format).toBe(WORLD_FORMAT);
+    expect(welcome.state.town.name.length).toBeGreaterThan(0);
     const first = await client.next(isTick);
     const second = await client.next(isTick);
     expect(second.tick).toBe(first.tick + 1);
@@ -211,6 +215,9 @@ describe("server", () => {
     expect(Number.isInteger(h.tick)).toBe(true);
     expect(h.tick).toBeGreaterThan(0);
     expect(h.date).toMatch(/^Day \d+, \d\d:\d\d$/);
+    expect(h.town).toBe(server.game.world.town.name);
+    expect(h.town.length).toBeGreaterThan(0);
+    expect(h.ops).toEqual([PLAYER_OP, RIVAL_OP]);
     const missing = await fetch(`http://127.0.0.1:${server.port}/nope`);
     expect(missing.status).toBe(404);
     client.close();
@@ -280,6 +287,73 @@ describe("server", () => {
     const res = await fetch(`http://127.0.0.1:${server.port}/`);
     expect(res.status).toBe(503);
     expect(await res.text()).toMatch(/client build/);
+  });
+});
+
+/** A data dir as Ring 0 left it: its schema, a format-less snapshot of a one-Op world, a command, a tick. */
+function writeRing0Db(dir: string): Buffer {
+  const { format: _f, parties: _p, town: _t, ...ring1 } = toSnapshot(
+    createWorld({ seed: 5, width: 64, height: 64, ops: [PLAYER_OP] }),
+  );
+  const ring0 = { ...ring1, tick: 1440 };
+  const db = new DatabaseSync(join(dir, DB_FILE));
+  db.exec(`
+    PRAGMA journal_mode = WAL;
+    CREATE TABLE snapshots (tick INTEGER PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE commands (seq INTEGER PRIMARY KEY AUTOINCREMENT, tick INTEGER NOT NULL, command TEXT NOT NULL);
+    CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  `);
+  db.prepare("INSERT INTO snapshots (tick, data) VALUES (?, ?)").run(1440, JSON.stringify(ring0));
+  db.prepare("INSERT INTO commands (tick, command) VALUES (?, ?)").run(
+    1500,
+    JSON.stringify({ type: "place_road", op: PLAYER_OP, x: 1, y: 1 }),
+  );
+  db.prepare("INSERT INTO meta (key, value) VALUES ('tick', '1600')").run();
+  db.close();
+  return readFileSync(join(dir, DB_FILE));
+}
+
+describe("world format", () => {
+  it("keeps a Ring 0 db file under a new name and starts a new Ring 1 world", async () => {
+    const dir = tempDir();
+    const old = writeRing0Db(dir);
+    const server = await start(testConfig(dir));
+    expect(server.archived).toBe("groundwork.format-1.db");
+    expect(readFileSync(join(dir, "groundwork.format-1.db")).equals(old)).toBe(true);
+    expect(existsSync(join(dir, DB_FILE))).toBe(true);
+
+    // A fresh Ring 1 world, not the old one.
+    const h = server.health();
+    expect(h.tick).toBeLessThan(1440);
+    expect(h.ops).toEqual([PLAYER_OP, RIVAL_OP]);
+    expect(server.game.world.parties.some((p) => p.kind === "town")).toBe(true);
+    await server.close();
+    servers.length = 0;
+
+    // The store records the format, and a restart keeps the new world.
+    const store = new Store(dir, WORLD_FORMAT);
+    expect(store.format()).toBe(WORLD_FORMAT);
+    expect(store.archived).toBeUndefined();
+    expect(store.latestSnapshot()?.format).toBe(WORLD_FORMAT);
+    store.close();
+    const again = await start(testConfig(dir));
+    expect(again.archived).toBeUndefined();
+    expect(again.health().town).toBe(h.town);
+    expect(readdirSync(dir).filter((f) => f.endsWith(".db")).sort()).toEqual([DB_FILE, "groundwork.format-1.db"]);
+  });
+
+  it("does not overwrite an earlier archive", async () => {
+    const dir = tempDir();
+    writeRing0Db(dir);
+    await (await start(testConfig(dir))).close();
+    servers.length = 0;
+    rmSync(join(dir, DB_FILE));
+    rmSync(join(dir, DB_FILE + "-wal"), { force: true });
+    rmSync(join(dir, DB_FILE + "-shm"), { force: true });
+    writeRing0Db(dir);
+    const server = await start(testConfig(dir));
+    expect(server.archived).toBe("groundwork.format-1.2.db");
+    expect(existsSync(join(dir, "groundwork.format-1.db"))).toBe(true);
   });
 });
 

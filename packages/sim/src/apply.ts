@@ -9,7 +9,7 @@ import {
   type CommandResult,
   type PlaceRoad,
 } from "@groundwork/protocol";
-import { inBounds, opIndex, ROAD_BUILDING, ROAD_NONE, tileIndex, type World } from "./world.ts";
+import { inBounds, opIndex, partyIndex, ROAD_BUILDING, ROAD_NONE, tileIndex, type World } from "./world.ts";
 
 /** Road cost by terrain, in whole currency units. */
 export const ROAD_COST: Readonly<Record<number, number>> = {
@@ -34,7 +34,7 @@ function placeRoad(world: World, cmd: PlaceRoad): CommandResult {
   const i = tileIndex(world, cmd.x, cmd.y);
   const terrain = world.terrain[i]!;
   if (terrain === TERRAIN.water) return reject("on_water", `(${cmd.x}, ${cmd.y}) is water`);
-  if (world.owner[i] !== k + 1) return reject("not_owner", `${cmd.op} does not own (${cmd.x}, ${cmd.y})`);
+  if (world.owner[i] !== partyIndex(world, "op", cmd.op)) return reject("not_owner", `${cmd.op} does not own (${cmd.x}, ${cmd.y})`);
   if (world.road[i] !== ROAD_NONE) return reject("already_road", `(${cmd.x}, ${cmd.y}) already has a road`);
   const cost = ROAD_COST[terrain]!;
   const op = world.ops[k]!;

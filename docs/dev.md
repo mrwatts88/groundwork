@@ -66,7 +66,13 @@ script from `packages/server`, so the world lives in
 `packages/server/data/groundwork.db`. Set `GROUNDWORK_DATA_DIR` to put it
 somewhere else. The store is SQLite through `node:sqlite`, so there is nothing
 native to build. `data/` is gitignored. Stop the server with Ctrl-C and start
-it again. It picks up at the tick where it stopped.
+it again. It picks up at the tick where it stopped. `GET /health` reports the
+tick, the game date, the clock, the town's name and the Op ids.
+
+The store records a world format version (`WORLD_FORMAT` in
+`packages/sim/src/world.ts`). If the db file holds an older format, the server
+keeps it as `groundwork.format-<N>.db` in the same folder and starts a fresh
+world. A Ring 0 file has no version and counts as format 1.
 
 Every setting comes from an environment variable. The defaults match
 DESIGN.md 11.1 and 11.2.

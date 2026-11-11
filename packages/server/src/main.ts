@@ -7,7 +7,10 @@ import { startServer } from "./server.ts";
 const config = loadConfig(process.env);
 const server = await startServer(config);
 const h = server.health();
-console.log(`groundwork: listening on ${config.host}:${server.port}, data in ${config.dataDir}, ${h.date} (tick ${h.tick})`);
+if (server.archived !== undefined) {
+  console.log(`groundwork: the old world was an older format, kept as ${server.archived}. A new world started`);
+}
+console.log(`groundwork: listening on ${config.host}:${server.port}, data in ${config.dataDir}, ${h.town}, ${h.date} (tick ${h.tick})`);
 
 let stopping = false;
 const stop = async (signal: string): Promise<void> => {

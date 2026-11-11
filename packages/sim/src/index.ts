@@ -9,7 +9,16 @@ export const SIM_PROTOCOL_VERSION: number = PROTOCOL_VERSION;
 
 export { apply, ROAD_BUILD_TICKS, ROAD_COST } from "./apply.ts";
 export { hashWorld } from "./hash.ts";
-export { CLAIM_SIZE, createWorld, STARTING_CASH, type WorldOptions } from "./mapgen.ts";
+export {
+  CLAIM_SIZE,
+  createWorld,
+  STARTING_CASH,
+  TOWN_CLEARANCE,
+  TOWN_ID,
+  TOWN_SIZE,
+  TOWN_WATER_RANGE,
+  type WorldOptions,
+} from "./mapgen.ts";
 export { run, type RunReport } from "./replay.ts";
 export { fromSnapshot, toSnapshot } from "./snapshot.ts";
 export { createRng, nextInt, nextU32, type Rng } from "./rng.ts";
@@ -26,11 +35,16 @@ export {
   inBounds,
   NO_OWNER,
   opIndex,
+  partyIndex,
+  partyOf,
   ROAD_BUILDING,
   ROAD_BUILT,
   ROAD_NONE,
   tileIndex,
+  tileOwner,
+  WORLD_FORMAT,
   type Build,
   type Op,
+  type Town,
   type World,
 } from "./world.ts";

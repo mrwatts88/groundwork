@@ -138,9 +138,7 @@ async function main(): Promise<void> {
       return;
     }
     const i = world.index(t.x, t.y);
-    const owner = world.owner[i]!;
-    const who = owner === 0 ? "nobody" : owner === world.playerOwner() ? "you" : (world.ops[owner - 1]?.id ?? "?");
-    say(`(${t.x}, ${t.y}) ${TERRAIN_NAMES[world.terrain[i]!] ?? "?"}, owned by ${who}`);
+    say(`(${t.x}, ${t.y}) ${TERRAIN_NAMES[world.terrain[i]!] ?? "?"}, owned by ${world.ownerName(i)}`);
   };
 
   // Pointer: drag pans, a click without a drag acts on the tile.

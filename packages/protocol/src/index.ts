@@ -109,12 +109,34 @@ export interface OpState {
   readonly cash: number;
 }
 
+/**
+ * Who can own a parcel (DESIGN.md 4.2, D-012). A tile's owner value is an
+ * index into the world's party list. Index 0 is always frontier.
+ */
+export type PartyKind = "frontier" | "op" | "town" | "person";
+
+export interface Party {
+  readonly kind: PartyKind;
+  /** The Op id, town id or person id. Frontier's id is "frontier". */
+  readonly id: string;
+}
+
+/** The one town of Ring 1 (DESIGN.md 4.3). Its land is the tiles the town party owns. */
+export interface TownState {
+  readonly id: string;
+  readonly name: string;
+  /** The market tile: where trucks sell. */
+  readonly market: number;
+}
+
 export interface BuildState {
   readonly tile: number;
   readonly remaining: number;
 }
 
 export interface WorldSnapshot {
+  /** The world format version (see WORLD_FORMAT in sim). Ring 0 snapshots have none. */
+  readonly format: number;
   readonly seed: number;
   readonly width: number;
   readonly height: number;
@@ -126,6 +148,8 @@ export interface WorldSnapshot {
   readonly road: readonly number[];
   readonly ops: readonly OpState[];
   readonly builds: readonly BuildState[];
+  readonly parties: readonly Party[];
+  readonly town: TownState;
 }
 
 /** A changed tile: [tile index, new value]. */

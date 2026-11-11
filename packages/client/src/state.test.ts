@@ -7,7 +7,9 @@ function snapshot(): WorldSnapshot {
   const owner = new Array<number>(16).fill(0);
   for (const i of [5, 6, 9, 10]) owner[i] = 1;
   owner[15] = 2;
+  owner[12] = 3;
   return {
+    format: 2,
     seed: 1,
     width: 4,
     height: 4,
@@ -22,6 +24,13 @@ function snapshot(): WorldSnapshot {
       { id: "rival", cash: 5_000 },
     ],
     builds: [],
+    parties: [
+      { kind: "frontier", id: "frontier" },
+      { kind: "op", id: "player" },
+      { kind: "op", id: "rival" },
+      { kind: "town", id: "town" },
+    ],
+    town: { id: "town", name: "Harlow", market: 12 },
   };
 }
 
@@ -31,6 +40,14 @@ describe("ClientWorld", () => {
     expect(w.playerOwner()).toBe(1);
     expect(w.playerCash()).toBe(10_000);
     expect(w.playerHome()).toEqual({ x: 1.5, y: 1.5 });
+  });
+
+  it("names who holds a tile", () => {
+    const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 });
+    expect(w.ownerName(0)).toBe("nobody");
+    expect(w.ownerName(5)).toBe("you");
+    expect(w.ownerName(15)).toBe("rival");
+    expect(w.ownerName(12)).toBe("Harlow");
   });
 
   it("applies a tick delta and reports the changed tiles", () => {

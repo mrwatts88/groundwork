@@ -2,10 +2,11 @@
 // client (DESIGN.md 11.2). Pure: no I/O here, the server does the storing.
 
 import type { WorldSnapshot } from "@groundwork/protocol";
-import type { World } from "./world.ts";
+import { WORLD_FORMAT, type World } from "./world.ts";
 
 export function toSnapshot(world: World): WorldSnapshot {
   return {
+    format: WORLD_FORMAT,
     seed: world.seed,
     width: world.width,
     height: world.height,
@@ -17,10 +18,13 @@ export function toSnapshot(world: World): WorldSnapshot {
     road: Array.from(world.road),
     ops: world.ops.map((op) => ({ id: op.id, cash: op.cash })),
     builds: world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
+    parties: world.parties.map((p) => ({ kind: p.kind, id: p.id })),
+    town: { id: world.town.id, name: world.town.name, market: world.town.market },
   };
 }
 
 export function fromSnapshot(s: WorldSnapshot): World {
+  if (s.format !== WORLD_FORMAT) throw new Error(`snapshot is world format ${s.format ?? 1}, expected ${WORLD_FORMAT}`);
   const tiles = s.width * s.height;
   for (const [name, arr] of [
     ["terrain", s.terrain],
@@ -29,6 +33,11 @@ export function fromSnapshot(s: WorldSnapshot): World {
     ["road", s.road],
   ] as const) {
     if (arr.length !== tiles) throw new Error(`snapshot ${name} has ${arr.length} tiles, expected ${tiles}`);
+  }
+  for (const owner of s.owner) {
+    if (!Number.isInteger(owner) || owner < 0 || owner >= s.parties.length) {
+      throw new Error(`snapshot owner ${owner} is not one of ${s.parties.length} parties`);
+    }
   }
   return {
     seed: s.seed,
@@ -42,5 +51,7 @@ export function fromSnapshot(s: WorldSnapshot): World {
     road: Uint8Array.from(s.road),
     ops: s.ops.map((op) => ({ id: op.id, cash: op.cash })),
     builds: s.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
+    parties: s.parties.map((p) => ({ kind: p.kind, id: p.id })),
+    town: { id: s.town.id, name: s.town.name, market: s.town.market },
   };
 }

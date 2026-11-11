@@ -6,6 +6,9 @@ import { apply, createWorld, fromSnapshot, run, tick, toSnapshot, type World } f
 import type { Store } from "./store.ts";
 
 export const PLAYER_OP = "player";
+/** Ring 1 has one rival Op (DESIGN.md 8). */
+export const RIVAL_OP = "rival";
+export const OPS = [PLAYER_OP, RIVAL_OP] as const;
 
 export interface GameOptions {
   readonly seed: number;
@@ -36,7 +39,7 @@ export class Game {
         seed: options.seed,
         width: options.mapSize,
         height: options.mapSize,
-        ops: [PLAYER_OP],
+        ops: OPS,
       });
       store.saveSnapshot(toSnapshot(world));
       return world;
