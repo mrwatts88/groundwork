@@ -309,6 +309,35 @@ the first tick its Op can pay a wage, and pays it then. Wages are paid in
 building order and never take cash below 0. Buildings travel in the snapshot,
 the hash and every tick delta. A format 3 save without them loads with none.
 
+### A vehicle
+
+Vehicles are in `packages/sim/src/vehicles.ts` (DESIGN.md 3, D-018).
+
+1. Add the kind to `VEHICLE_KINDS` in protocol. `parseCommand` takes it from
+   there.
+2. Give it a row in `VEHICLE_SPEC`: `cost`, `capacity`, `ticksPerTile` and
+   `mineTicks`.
+3. Give it its work in `act()` in `vehicles.ts`, one case per task.
+
+`buy_vehicle` takes the tile of a depot. It is refused with `no_depot`,
+`not_owner` (someone else's depot), `not_active` (under construction),
+`out_of_bounds`, `insufficient_cash` or `insufficient_attention`. It charges
+`VEHICLE_SPEC[kind].cost` and 3 attention and adds a `Vehicle` to
+`world.vehicles` on the depot tile, with id `world.nextVehicle`.
+`set_route` takes a vehicle id and a deposit tile. It is refused with
+`unknown_vehicle`, `not_your_vehicle`, `not_deposit`, `not_owner` (the Op
+does not own the deposit), `occupied`, `exhausted` (no ore left), `no_path`
+(no road joins it to the vehicle's depot) or `out_of_bounds`, and costs 2
+attention. `findPath` is the one path search: breadth first over road tiles,
+built or under construction, east, west, south, north. `updateVehicles` runs
+in `tick()` after `updateBuildings`. A harvester is `idle` at its depot,
+`outbound`, `mining` (1 ore per `mineTicks`, richness down by 1) or
+`returning`, and unloads into the depot's `ore` when the depot is staffed.
+Vehicles travel in the snapshot, the hash and every tick delta, and a save
+without them loads with none. `place_building` refuses a deposit tile with
+`on_deposit`. `harvesterSite` in `scenario.ts` finds a deposit, a road line
+and a depot site for tests.
+
 ### Attention
 
 Each Op has `attention`, refilled to `ATTENTION_PER_DAY` (40, in protocol)

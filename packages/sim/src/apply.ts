@@ -4,15 +4,18 @@
 
 import {
   TERRAIN,
+  type BuyVehicle,
   type Command,
   type CommandErrorCode,
   type CommandResult,
   type PlaceBuilding,
   type PlaceRoad,
+  type SetRoute,
   type StakeClaim,
 } from "@groundwork/protocol";
 import { attentionCost } from "./attention.ts";
 import { BUILDING_SPEC, buildingAt, buildingPrice } from "./buildings.ts";
+import { depositProblem, findPath, VEHICLE_SPEC, vehicleById } from "./vehicles.ts";
 import {
   inBounds,
   NO_OWNER,
@@ -116,12 +119,71 @@ function placeBuilding(world: World, cmd: PlaceBuilding): CommandResult {
   if (world.road[i] !== ROAD_NONE || buildingAt(world, i) !== undefined) {
     return reject("occupied", `(${cmd.x}, ${cmd.y}) is already built on`);
   }
+  // A depot on ore would bury the deposit its harvesters mine (D-018).
+  if (world.terrain[i] === TERRAIN.deposit) return reject("on_deposit", `(${cmd.x}, ${cmd.y}) is a deposit`);
   if (!nextToRoad(world, cmd.x, cmd.y)) return reject("no_road", `(${cmd.x}, ${cmd.y}) has no road next to it`);
   const price = buildingPrice(cmd.kind);
   const op = world.ops[k]!;
   if (op.cash < price) return reject("insufficient_cash", `${cmd.op} has ${op.cash}, a ${cmd.kind} costs ${price}`);
   op.cash -= price;
-  world.buildings.push({ kind: cmd.kind, tile: i, op: cmd.op, remaining: BUILDING_SPEC[cmd.kind].buildTicks, staffed: false });
+  world.buildings.push({ kind: cmd.kind, tile: i, op: cmd.op, remaining: BUILDING_SPEC[cmd.kind].buildTicks, staffed: false, ore: 0 });
+  return { ok: true };
+}
+
+function buyVehicle(world: World, cmd: BuyVehicle): CommandResult {
+  const k = opIndex(world, cmd.op);
+  if (k < 0) return reject("unknown_op", `no op ${cmd.op}`);
+  if (!inBounds(world, cmd.x, cmd.y)) return reject("out_of_bounds", `(${cmd.x}, ${cmd.y}) is off the map`);
+  const i = tileIndex(world, cmd.x, cmd.y);
+  const depot = buildingAt(world, i);
+  if (depot === undefined || depot.kind !== "depot") return reject("no_depot", `(${cmd.x}, ${cmd.y}) has no depot`);
+  if (depot.op !== cmd.op) return reject("not_owner", `the depot at (${cmd.x}, ${cmd.y}) is not ${cmd.op}'s`);
+  if (depot.remaining > 0) return reject("not_active", `the depot at (${cmd.x}, ${cmd.y}) is still under construction`);
+  const price = VEHICLE_SPEC[cmd.kind].cost;
+  const op = world.ops[k]!;
+  if (op.cash < price) return reject("insufficient_cash", `${cmd.op} has ${op.cash}, a ${cmd.kind} costs ${price}`);
+  op.cash -= price;
+  world.vehicles.push({
+    id: world.nextVehicle,
+    kind: cmd.kind,
+    op: cmd.op,
+    depot: i,
+    tile: i,
+    route: -1,
+    task: "idle",
+    path: [],
+    cargo: 0,
+    wait: 0,
+  });
+  world.nextVehicle += 1;
+  return { ok: true };
+}
+
+function setRoute(world: World, cmd: SetRoute): CommandResult {
+  if (opIndex(world, cmd.op) < 0) return reject("unknown_op", `no op ${cmd.op}`);
+  const v = vehicleById(world, cmd.vehicle);
+  if (v === undefined) return reject("unknown_vehicle", `no vehicle ${cmd.vehicle}`);
+  if (v.op !== cmd.op) return reject("not_your_vehicle", `vehicle ${cmd.vehicle} is not ${cmd.op}'s`);
+  if (!inBounds(world, cmd.x, cmd.y)) return reject("out_of_bounds", `(${cmd.x}, ${cmd.y}) is off the map`);
+  const i = tileIndex(world, cmd.x, cmd.y);
+  const problem = depositProblem(world, cmd.op, i);
+  if (problem !== null) {
+    const why = {
+      not_deposit: "is not a deposit",
+      not_owner: `is not ${cmd.op}'s land`,
+      occupied: "has a building on it",
+      exhausted: "has no ore left",
+    }[problem];
+    return reject(problem, `(${cmd.x}, ${cmd.y}) ${why}`);
+  }
+  if (findPath(world, v.depot, i) === null) return reject("no_path", `no road joins the depot to (${cmd.x}, ${cmd.y})`);
+  const changed = v.route !== i;
+  v.route = i;
+  // On its way out to, or mining, another deposit, it heads home first and sets off on the new route from there.
+  if (changed && (v.task === "outbound" || v.task === "mining")) {
+    v.task = "returning";
+    v.path = findPath(world, v.tile, v.depot) ?? [];
+  }
   return { ok: true };
 }
 
@@ -133,6 +195,10 @@ function dispatch(world: World, command: Command): CommandResult {
       return stakeClaim(world, command);
     case "place_building":
       return placeBuilding(world, command);
+    case "buy_vehicle":
+      return buyVehicle(world, command);
+    case "set_route":
+      return setRoute(world, command);
   }
 }
 

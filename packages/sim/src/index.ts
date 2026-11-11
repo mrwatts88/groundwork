@@ -50,9 +50,20 @@ export {
   PERSONALITY_TRAITS,
 } from "./people.ts";
 export { run, type RunReport } from "./replay.ts";
-export { fromSnapshot, toSnapshot } from "./snapshot.ts";
+export { copyVehicle, fromSnapshot, toSnapshot } from "./snapshot.ts";
+export {
+  depositProblem,
+  findPath,
+  RETRY_TICKS,
+  updateVehicles,
+  VEHICLE_SPEC,
+  vehicleById,
+  type VehicleSpec,
+} from "./vehicles.ts";
 export { createRng, nextInt, nextU32, type Rng } from "./rng.ts";
 export {
+  harvesterSite,
+  type HarvesterSite,
   SCENARIO_OPS,
   SCENARIO_SEED,
   SCENARIO_SIZE,
@@ -80,5 +91,6 @@ export {
   type Person,
   type Survey,
   type Town,
+  type Vehicle,
   type World,
 } from "./world.ts";

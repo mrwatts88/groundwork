@@ -20,6 +20,13 @@ describe("determinism", () => {
     expect(second).toEqual(first);
   });
 
+  it("runs harvesters that mine and fill depots over the run", () => {
+    const world = scenarioWorld();
+    run(world, scenarioLog(world), SCENARIO_TICKS);
+    expect(world.vehicles.length).toBeGreaterThan(0);
+    expect(world.buildings.some((b) => b.ore > 0)).toBe(true);
+  });
+
   it("changes the hash when the command log changes", () => {
     const a = scenarioWorld();
     const logA = scenarioLog(a);

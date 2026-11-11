@@ -1,12 +1,29 @@
 // World <-> plain data, for SQLite snapshots and the initial state sent to a
 // client (DESIGN.md 11.2). Pure: no I/O here, the server does the storing.
 
-import type { BuildingState, PersonState, WorldSnapshot } from "@groundwork/protocol";
+import type { BuildingState, PersonState, VehicleState, WorldSnapshot } from "@groundwork/protocol";
 import { ATTENTION_PER_DAY } from "./attention.ts";
-import { WORLD_FORMAT, type Building, type Person, type World } from "./world.ts";
+import { WORLD_FORMAT, type Building, type Person, type Vehicle, type World } from "./world.ts";
 
 function copyBuilding(b: BuildingState): Building {
-  return { kind: b.kind, tile: b.tile, op: b.op, remaining: b.remaining, staffed: b.staffed };
+  // Saves from before R1-07 have no ore stock.
+  return { kind: b.kind, tile: b.tile, op: b.op, remaining: b.remaining, staffed: b.staffed, ore: b.ore ?? 0 };
+}
+
+/** A vehicle as plain data. The server's tick delta uses this too. */
+export function copyVehicle(v: VehicleState): Vehicle {
+  return {
+    id: v.id,
+    kind: v.kind,
+    op: v.op,
+    depot: v.depot,
+    tile: v.tile,
+    route: v.route,
+    task: v.task,
+    path: [...v.path],
+    cargo: v.cargo,
+    wait: v.wait,
+  };
 }
 
 function copyPerson(p: PersonState): Person {
@@ -29,6 +46,8 @@ export function toSnapshot(world: World): WorldSnapshot {
     builds: world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
     surveys: world.surveys.map((s) => ({ tile: s.tile, op: s.op, remaining: s.remaining })),
     buildings: world.buildings.map(copyBuilding),
+    vehicles: world.vehicles.map(copyVehicle),
+    nextVehicle: world.nextVehicle,
     parties: world.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: world.town.id, name: world.town.name, market: world.town.market },
     people: world.people.map(copyPerson),
@@ -73,6 +92,9 @@ export function fromSnapshot(s: WorldSnapshot): World {
     surveys: (s.surveys ?? []).map((v) => ({ tile: v.tile, op: v.op, remaining: v.remaining })),
     // Format 3 saves from before buildings have none.
     buildings: (s.buildings ?? []).map(copyBuilding),
+    // Format 3 saves from before vehicles have none.
+    vehicles: (s.vehicles ?? []).map(copyVehicle),
+    nextVehicle: s.nextVehicle ?? 1,
     parties: s.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: s.town.id, name: s.town.name, market: s.town.market },
     people: s.people.map(copyPerson),

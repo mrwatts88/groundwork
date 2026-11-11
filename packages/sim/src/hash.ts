@@ -76,7 +76,23 @@ export function hashWorld(world: World): string {
     h.str(b.op);
     h.int(b.remaining);
     h.u32(b.staffed ? 1 : 0);
+    h.int(b.ore);
   }
+  h.u32(world.vehicles.length);
+  for (const v of world.vehicles) {
+    h.int(v.id);
+    h.str(v.kind);
+    h.str(v.op);
+    h.u32(v.depot);
+    h.u32(v.tile);
+    h.int(v.route);
+    h.str(v.task);
+    h.u32(v.path.length);
+    for (const t of v.path) h.u32(t);
+    h.int(v.cargo);
+    h.int(v.wait);
+  }
+  h.int(world.nextVehicle);
   h.u32(world.parties.length);
   for (const party of world.parties) {
     h.str(party.kind);

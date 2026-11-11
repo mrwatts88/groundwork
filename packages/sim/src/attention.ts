@@ -13,6 +13,8 @@ export const ATTENTION_COST: Readonly<Record<CommandType, number>> = {
   place_road: 1,
   stake_claim: 3,
   place_building: 5,
+  buy_vehicle: 3,
+  set_route: 2,
 };
 
 /** Points a command costs. */

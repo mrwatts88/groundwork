@@ -2,7 +2,7 @@
 // where it stopped, apply commands, tick, persist and produce deltas.
 
 import type { Command, CommandResult, TileChange, WorldDelta } from "@groundwork/protocol";
-import { apply, createWorld, fromSnapshot, run, tick, toSnapshot, type World } from "@groundwork/sim";
+import { apply, copyVehicle, createWorld, fromSnapshot, run, tick, toSnapshot, type World } from "@groundwork/sim";
 import type { Store } from "./store.ts";
 
 export const PLAYER_OP = "player";
@@ -80,7 +80,9 @@ export class Game {
         op: b.op,
         remaining: b.remaining,
         staffed: b.staffed,
+        ore: b.ore,
       })),
+      vehicles: this.world.vehicles.map(copyVehicle),
     };
   }
 }

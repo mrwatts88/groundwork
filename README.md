@@ -10,7 +10,9 @@ The design is in `DESIGN.md`. How it gets built is in `PROCESS.md`.
 
 Ring 1, first playable, in progress. You can open the world in a browser,
 look around the map, find the town and its people, see who owns what, lay
-roads, stake land and build a depot. There is no ore trade yet.
+roads, stake land and build a depot. Harvesters run in the game world, but
+buying and routing them from the browser comes with the next client update.
+There is no ore trade yet.
 
 ## How to play
 
@@ -43,8 +45,8 @@ day. If you cannot pay, the crew stops work: the depot is idle and its door
 goes dark. As soon as you have $100 again it hires them back and pays them.
 Your cash never goes below zero. The inspector's Building row says whether a
 depot is under construction, staffed or idle. You cannot build on water, on
-a road, on a tile that already has a building, on frontier or on land
-someone else owns.
+a road, on a deposit, on a tile that already has a building, on frontier or
+on land someone else owns.
 
 Press T to centre the map on the town. Its houses have red pitched roofs and
 the market is the wide hall with a striped roof and a flag. Press O, or the
@@ -54,10 +56,19 @@ people. Press O again to turn it off. Click any tile to open the inspector
 on the right. It shows the terrain, the owner by name and, on a deposit, how
 rich it is. Esc closes it.
 
+Harvesters bring ore from a deposit you own to your depot. You buy one at a
+built depot for $800 and 3 attention, then route it to a deposit for 2
+attention. Your deposit needs a road from the depot, and a depot cannot sit
+on a deposit. From then on it works for free: it drives the roads out, mines
+a load of 10 ore, drives back and unloads into the depot. Each load lowers the
+deposit's richness. When the deposit runs dry the harvester waits at the
+depot. While the depot is idle it waits there with its load. The buttons for
+this come to the inspector in a later update.
+
 Attention in the HUD is how much you can still do today, shown as N/40.
 Every operation, yours and the rival's, gets 40 points at the start of each
 game day. Laying a road costs 1, staking a tile costs 3 and placing a depot
-costs 5. Points you do not use are gone at the next day, so they do not pile
+costs 5. Buying a harvester costs 3 and routing it costs 2. Points you do not use are gone at the next day, so they do not pile
 up. When you run out, the command is refused until the day turns.
 
 ## Run locally

@@ -2,6 +2,7 @@
 
 import { refillAttention } from "./attention.ts";
 import { updateBuildings } from "./buildings.ts";
+import { updateVehicles } from "./vehicles.ts";
 import { NO_OWNER, partyIndex, ROAD_BUILT, type World } from "./world.ts";
 
 export function tick(world: World): void {
@@ -29,4 +30,5 @@ export function tick(world: World): void {
   world.tick += 1;
   refillAttention(world);
   updateBuildings(world);
+  updateVehicles(world);
 }

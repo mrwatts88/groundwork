@@ -243,6 +243,8 @@ export function createWorld(options: WorldOptions): World {
     builds: [],
     surveys: [],
     buildings: [],
+    vehicles: [],
+    nextVehicle: 1,
     parties,
     // The market tile is set once the town is placed.
     town: { id: TOWN_ID, name: townName, market: -1 },

@@ -31,6 +31,23 @@ describe("parseClientMessage", () => {
     expect(parseClientMessage(JSON.stringify({ type: "command", id: 4, command: noKind })).ok).toBe(false);
   });
 
+  it("accepts buy_vehicle and set_route, and refuses an unknown kind or a missing vehicle id", () => {
+    const buy = { type: "buy_vehicle", op: "player", kind: "harvester", x: 3, y: 4 };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 5, command: buy }))).toEqual({
+      ok: true,
+      value: { type: "command", id: 5, command: buy },
+    });
+    const blimp = { ...buy, kind: "blimp" };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 6, command: blimp })).ok).toBe(false);
+    const route = { type: "set_route", op: "player", vehicle: 1, x: 9, y: 2 };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 7, command: route }))).toEqual({
+      ok: true,
+      value: { type: "command", id: 7, command: route },
+    });
+    const noVehicle = { type: "set_route", op: "player", x: 9, y: 2 };
+    expect(parseClientMessage(JSON.stringify({ type: "command", id: 8, command: noVehicle })).ok).toBe(false);
+  });
+
   it("accepts set_speed", () => {
     expect(parseClientMessage('{"type":"set_speed","speed":4}')).toEqual({
       ok: true,

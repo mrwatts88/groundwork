@@ -1,7 +1,7 @@
 // World state (DESIGN.md 4.2, 6.1). Plain data with integer fields only, so it
 // hashes and replays bit for bit.
 
-import type { BuildingKind, OpId, Party, PartyKind, PersonState } from "@groundwork/protocol";
+import type { BuildingKind, OpId, Party, PartyKind, PersonState, VehicleKind, VehicleTask } from "@groundwork/protocol";
 import type { Rng } from "./rng.ts";
 
 export interface Op {
@@ -34,6 +34,26 @@ export interface Building {
   remaining: number;
   /** Whether its crew is paid and working. */
   staffed: boolean;
+  /** Ore in store (a depot's stock). */
+  ore: number;
+}
+
+/** A vehicle an Op bought (DESIGN.md 3, D-018). See vehicles.ts. */
+export interface Vehicle {
+  readonly id: number;
+  readonly kind: VehicleKind;
+  readonly op: OpId;
+  /** Tile of its home depot. */
+  readonly depot: number;
+  tile: number;
+  /** The route's far end (a harvester's deposit), or -1. */
+  route: number;
+  task: VehicleTask;
+  /** Tiles still to drive on this leg, next first. */
+  path: number[];
+  cargo: number;
+  /** Game minutes until its next step, load or retry. */
+  wait: number;
 }
 
 export const ROAD_NONE = 0;
@@ -83,6 +103,10 @@ export interface World {
   readonly surveys: Survey[];
   /** Buildings, in the order they were placed. */
   readonly buildings: Building[];
+  /** Vehicles, in the order they were bought. */
+  readonly vehicles: Vehicle[];
+  /** The id the next vehicle bought gets. */
+  nextVehicle: number;
   /**
    * Everyone who can own land, in a fixed order: frontier first, then the
    * Ops, then the town, then named people. Owner values index this list.

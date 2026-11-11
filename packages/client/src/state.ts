@@ -13,6 +13,7 @@ import {
   type PersonState,
   type SurveyState,
   type TownState,
+  type VehicleState,
   type WorldDelta,
   type WorldSnapshot,
 } from "@groundwork/protocol";
@@ -62,6 +63,8 @@ export class ClientWorld {
   surveys: readonly SurveyState[];
   /** Buildings Ops placed (DESIGN.md 6.3). */
   buildings: readonly BuildingState[];
+  /** Vehicles Ops bought (DESIGN.md 3). Drawn from R1-09. */
+  vehicles: readonly VehicleState[];
   /** Display names of other Ops, by id. */
   readonly opNames: Readonly<Record<OpId, string>>;
   /** Owner values index this list. 0 is frontier. */
@@ -82,6 +85,7 @@ export class ClientWorld {
     this.ops = state.ops;
     this.surveys = state.surveys ?? [];
     this.buildings = state.buildings ?? [];
+    this.vehicles = state.vehicles ?? [];
     this.opNames = opNames;
     this.parties = state.parties;
     this.town = state.town;
@@ -119,6 +123,7 @@ export class ClientWorld {
     for (const [t, v] of now) if (was.get(t) !== v) changed.push(t);
     for (const t of was.keys()) if (!now.has(t)) changed.push(t);
     this.buildings = delta.buildings;
+    this.vehicles = delta.vehicles;
     return changed;
   }
 

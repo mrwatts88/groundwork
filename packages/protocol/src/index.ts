@@ -68,8 +68,39 @@ export interface PlaceBuilding {
   readonly y: number;
 }
 
+/** Kinds of vehicle an Op can buy. Ring 1 has the harvester (DESIGN.md 3, D-018). */
+export const VEHICLE_KINDS = ["harvester"] as const;
+export type VehicleKind = (typeof VEHICLE_KINDS)[number];
+
+/**
+ * Buy a vehicle at an active depot the Op owns (DESIGN.md 3, D-018). It
+ * starts on the depot tile, which is its home.
+ */
+export interface BuyVehicle {
+  readonly type: "buy_vehicle";
+  readonly op: OpId;
+  readonly kind: VehicleKind;
+  /** The depot's tile. */
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * Route one of the Op's vehicles (DESIGN.md 3, D-018). A harvester runs
+ * between the deposit tile at (x, y), which the Op must own, and its depot.
+ */
+export interface SetRoute {
+  readonly type: "set_route";
+  readonly op: OpId;
+  /** The vehicle's id. */
+  readonly vehicle: number;
+  /** The route's far end: a harvester's deposit tile. */
+  readonly x: number;
+  readonly y: number;
+}
+
 /** Every command any actor can issue. The one command API takes these (DESIGN.md 12.2). */
-export type Command = PlaceRoad | StakeClaim | PlaceBuilding;
+export type Command = PlaceRoad | StakeClaim | PlaceBuilding | BuyVehicle | SetRoute;
 
 export type CommandType = Command["type"];
 
@@ -77,7 +108,7 @@ export type CommandType = Command["type"];
  * Every command type, at runtime. The sim's attention cost table is checked
  * against this list, and the line below fails to compile if a type is missing.
  */
-export const COMMAND_TYPES = ["place_road", "stake_claim", "place_building"] as const satisfies readonly CommandType[];
+export const COMMAND_TYPES = ["place_road", "stake_claim", "place_building", "buy_vehicle", "set_route"] as const satisfies readonly CommandType[];
 type MissingCommandType = Exclude<CommandType, (typeof COMMAND_TYPES)[number]>;
 const allCommandTypesListed: [MissingCommandType] extends [never] ? true : never = true;
 void allCommandTypesListed;
@@ -98,6 +129,14 @@ export type CommandErrorCode =
   | "already_road"
   | "no_road"
   | "occupied"
+  | "on_deposit"
+  | "no_depot"
+  | "not_active"
+  | "unknown_vehicle"
+  | "not_your_vehicle"
+  | "not_deposit"
+  | "exhausted"
+  | "no_path"
   | "insufficient_cash"
   | "insufficient_attention";
 
@@ -228,6 +267,35 @@ export interface BuildingState {
   readonly remaining: number;
   /** Whether its crew is paid and working. False while under construction. */
   readonly staffed: boolean;
+  /** Ore in store. A depot's stock, filled by harvesters. */
+  readonly ore: number;
+}
+
+/**
+ * What a vehicle is doing (D-018). idle: waiting at its depot. outbound:
+ * driving to its deposit. mining: loading ore at the deposit. returning:
+ * driving home, where it unloads.
+ */
+export type VehicleTask = "idle" | "outbound" | "mining" | "returning";
+
+/** A vehicle an Op bought (DESIGN.md 3, D-018). */
+export interface VehicleState {
+  readonly id: number;
+  readonly kind: VehicleKind;
+  readonly op: OpId;
+  /** Tile of its home depot. */
+  readonly depot: number;
+  /** The tile it is on. */
+  readonly tile: number;
+  /** The route's far end (a harvester's deposit tile), or -1 with no route. */
+  readonly route: number;
+  readonly task: VehicleTask;
+  /** Tiles still to drive on this leg, next first. */
+  readonly path: readonly number[];
+  /** Ore on board. */
+  readonly cargo: number;
+  /** Game minutes until its next step, load or retry. */
+  readonly wait: number;
 }
 
 export interface WorldSnapshot {
@@ -248,6 +316,10 @@ export interface WorldSnapshot {
   readonly surveys: readonly SurveyState[];
   /** Buildings Ops placed, in the order they were placed. Missing in saves from before R1-06. */
   readonly buildings: readonly BuildingState[];
+  /** Vehicles, in the order they were bought. Missing in saves from before R1-07. */
+  readonly vehicles: readonly VehicleState[];
+  /** The id the next vehicle bought gets. Missing in saves from before R1-07. */
+  readonly nextVehicle: number;
   readonly parties: readonly Party[];
   readonly town: TownState;
   /** The town's named people, in creation order. */
@@ -264,6 +336,7 @@ export interface WorldDelta {
   readonly builds: readonly BuildState[];
   readonly surveys: readonly SurveyState[];
   readonly buildings: readonly BuildingState[];
+  readonly vehicles: readonly VehicleState[];
 }
 
 // ---------------------------------------------------------------------------
@@ -345,6 +418,22 @@ export function parseCommand(v: unknown): Parsed<Command> {
       }
       if (!isInt(x) || !isInt(y)) return { ok: false, message: "place_building needs integer x and y" };
       return { ok: true, value: { type: "place_building", op, kind: kind as BuildingKind, x, y } };
+    }
+    case "buy_vehicle": {
+      const { op, kind, x, y } = v;
+      if (typeof op !== "string" || op.length === 0) return { ok: false, message: "buy_vehicle needs an op id" };
+      if (!VEHICLE_KINDS.includes(kind as VehicleKind)) {
+        return { ok: false, message: `buy_vehicle needs a kind, one of ${VEHICLE_KINDS.join(", ")}` };
+      }
+      if (!isInt(x) || !isInt(y)) return { ok: false, message: "buy_vehicle needs integer x and y" };
+      return { ok: true, value: { type: "buy_vehicle", op, kind: kind as VehicleKind, x, y } };
+    }
+    case "set_route": {
+      const { op, vehicle, x, y } = v;
+      if (typeof op !== "string" || op.length === 0) return { ok: false, message: "set_route needs an op id" };
+      if (!isInt(vehicle)) return { ok: false, message: "set_route needs an integer vehicle id" };
+      if (!isInt(x) || !isInt(y)) return { ok: false, message: "set_route needs integer x and y" };
+      return { ok: true, value: { type: "set_route", op, vehicle, x, y } };
     }
     default:
       return { ok: false, message: `unknown command type ${JSON.stringify(v["type"])}` };

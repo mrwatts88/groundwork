@@ -5,12 +5,65 @@
 import { TERRAIN, type LoggedCommand } from "@groundwork/protocol";
 import { createWorld } from "./mapgen.ts";
 import { createRng, nextInt } from "./rng.ts";
-import { partyIndex, type World } from "./world.ts";
+import { buildingAt } from "./buildings.ts";
+import { NO_OWNER, partyIndex, ROAD_NONE, surveyAt, type World } from "./world.ts";
 
 export const SCENARIO_SEED = 20261111;
 export const SCENARIO_SIZE = 128;
 export const SCENARIO_TICKS = 10_000;
 export const SCENARIO_OPS = ["player", "rival"] as const;
+
+/** A deposit, a line of road tiles and a depot site, as tile indices. */
+export interface HarvesterSite {
+  /** A deposit tile the Op owns or can stake. */
+  readonly deposit: number;
+  /** Tiles to lay road on, from the deposit's side to the depot's. */
+  readonly roads: readonly number[];
+  /** A dry tile the Op owns, beside the last road tile. */
+  readonly depot: number;
+}
+
+/**
+ * Finds where an Op can run a harvester with exactly `roads` road tiles
+ * between its deposit and its depot, using only land it may build on
+ * (frontier or its own) that is still bare. The search is breadth first in a
+ * fixed order, so the same world gives the same site. Returns null if there is
+ * none. Scenario and test setup, not a game rule.
+ */
+export function harvesterSite(world: World, op: string, roads: number): HarvesterSite | null {
+  const me = partyIndex(world, "op", op);
+  const { width, height } = world;
+  const bare = (i: number) => world.road[i] === ROAD_NONE && buildingAt(world, i) === undefined && surveyAt(world, i) === undefined;
+  const open = (i: number) =>
+    world.terrain[i] !== TERRAIN.water && world.terrain[i] !== TERRAIN.deposit && (world.owner[i] === NO_OWNER || world.owner[i] === me) && bare(i);
+  for (let deposit = 0; deposit < world.terrain.length; deposit++) {
+    if (world.terrain[deposit] !== TERRAIN.deposit || world.richness[deposit] === 0 || !bare(deposit)) continue;
+    if (world.owner[deposit] !== NO_OWNER && world.owner[deposit] !== me) continue;
+    const prev = new Int32Array(width * height).fill(-1);
+    const dist = new Int32Array(width * height).fill(-1);
+    prev[deposit] = deposit;
+    dist[deposit] = 0;
+    const queue = [deposit];
+    for (let head = 0; head < queue.length; head++) {
+      const at = queue[head]!;
+      if (dist[at] === roads + 1) {
+        if (world.owner[at] !== me) continue;
+        const line: number[] = [];
+        for (let t = prev[at]!; t !== deposit; t = prev[t]!) line.push(t);
+        return { deposit, roads: line.reverse(), depot: at };
+      }
+      const x = at % width;
+      const y = (at - x) / width;
+      for (const n of [x + 1 < width ? at + 1 : -1, x > 0 ? at - 1 : -1, y + 1 < height ? at + width : -1, y > 0 ? at - width : -1]) {
+        if (n < 0 || dist[n] !== -1 || !open(n)) continue;
+        dist[n] = dist[at]! + 1;
+        prev[n] = at;
+        queue.push(n);
+      }
+    }
+  }
+  return null;
+}
 
 export function scenarioWorld(seed: number = SCENARIO_SEED): World {
   return createWorld({ seed, width: SCENARIO_SIZE, height: SCENARIO_SIZE, ops: SCENARIO_OPS });
@@ -61,6 +114,21 @@ export function scenarioLog(world: World, ticks: number = SCENARIO_TICKS): Logge
       const y = Math.floor(at / world.width);
       log.push({ tick: t, command: { type: "place_road", op, x: x + 1, y } });
       log.push({ tick: t, command: { type: "place_building", op, kind: "depot", x, y } });
+    }
+    // A harvester route: stake a deposit, road it to a depot, buy a harvester
+    // and route it, so vehicles mine and haul over the run. Vehicle ids follow
+    // the order of successful buys, so the other Op's reroute is refused.
+    const site = harvesterSite(world, op, 8);
+    if (site !== null) {
+      const at = (i: number) => ({ x: i % world.width, y: Math.floor(i / world.width) });
+      log.push({ tick: 0, command: { type: "stake_claim", op, ...at(site.deposit) } });
+      for (const r of site.roads) log.push({ tick: 0, command: { type: "place_road", op, ...at(r) } });
+      log.push({ tick: 0, command: { type: "place_building", op, kind: "depot", ...at(site.depot) } });
+      log.push({ tick: 500, command: { type: "buy_vehicle", op, kind: "harvester", ...at(site.depot) } });
+      log.push({ tick: 501, command: { type: "set_route", op, vehicle: k + 1, ...at(site.deposit) } });
+      const other = world.ops[(k + 1) % world.ops.length]!.id;
+      log.push({ tick: 502, command: { type: "set_route", op: other, vehicle: k + 1, ...at(site.deposit) } });
+      log.push({ tick: nextInt(rng, ticks), command: { type: "buy_vehicle", op, kind: "harvester", ...at(site.roads[0]!) } });
     }
     log.push({ tick: nextInt(rng, ticks), command: { type: "place_road", op, x: -1, y: 0 } });
     log.push({ tick: nextInt(rng, ticks), command: { type: "place_road", op, x: world.width, y: 3 } });

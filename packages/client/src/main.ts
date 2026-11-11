@@ -103,6 +103,8 @@ async function main(): Promise<void> {
     if (mode === "depot") {
       const w = world;
       if (owner !== w.playerOwner() || w.road[i] !== ROAD_NONE || w.buildingAt(i) !== undefined) return false;
+      // A depot cannot bury a deposit (D-018).
+      if (w.terrain[i] === TERRAIN.deposit) return false;
       const sides = [[t.x + 1, t.y], [t.x - 1, t.y], [t.x, t.y + 1], [t.x, t.y - 1]] as const;
       return sides.some(([x, y]) => w.inBounds(x, y) && w.road[w.index(x, y)] !== ROAD_NONE);
     }

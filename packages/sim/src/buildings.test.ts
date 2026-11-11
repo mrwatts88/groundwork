@@ -61,7 +61,7 @@ describe("place_building depot", () => {
     expect(world.ops[0]!.cash).toBe(cash - DEPOT.cost - DEPOT.hiring);
     expect(world.ops[0]!.attention).toBe(attention - ATTENTION_COST.place_building);
     const i = s.site.y * world.width + s.site.x;
-    expect(buildingAt(world, i)).toEqual({ kind: "depot", tile: i, op: "player", remaining: DEPOT.buildTicks, staffed: false });
+    expect(buildingAt(world, i)).toEqual({ kind: "depot", tile: i, op: "player", remaining: DEPOT.buildTicks, staffed: false, ore: 0 });
     ticks(world, DEPOT.buildTicks - 1);
     expect(buildingAt(world, i)!.remaining).toBe(1);
     expect(buildingAt(world, i)!.staffed).toBe(false);
@@ -196,7 +196,7 @@ describe("buildings in the state", () => {
     ticks(world, 100);
     const copy = fromSnapshot(toSnapshot(world));
     expect(hashWorld(copy)).toBe(hashWorld(world));
-    expect(copy.buildings).toEqual([{ kind: "depot", tile, op: "player", remaining: DEPOT.buildTicks - 100, staffed: false }]);
+    expect(copy.buildings).toEqual([{ kind: "depot", tile, op: "player", remaining: DEPOT.buildTicks - 100, staffed: false, ore: 0 }]);
     // The hash sees construction progress and staffing.
     const other = fromSnapshot(toSnapshot(world));
     other.buildings[0]!.staffed = true;

@@ -513,7 +513,7 @@
         "a test shows a deposit mined down to 0 richness stops yielding and its harvester waits at the depot",
         "vehicles, their cargo and depot stock are in the snapshot, hash and delta, and the determinism tests and pnpm test:slow still match"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R1-08",
