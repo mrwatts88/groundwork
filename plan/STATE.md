@@ -6,7 +6,7 @@ Rewritten at the end of every session. Under 40 lines.
 (`http://laptop-ts:7400` away from home), pan, zoom, press Home and lay roads
 with R. T centres on the town (six houses, a market, roads). O colours land
 by owner. A click opens the inspector: terrain, owner, richness, building.
-Older worlds are kept as groundwork.format-<N>.db. No economy yet.
+The HUD shows attention as N/40, and a road costs 1. No economy yet.
 **At the end of Ring 1 Matt will be able to:** run the ore loop (stake, roads,
 depot, harvester, truck, sell to a growing town) against a Mind-led rival,
 chat with six named people and buy land in chat, on 40 attention a day.
@@ -14,7 +14,8 @@ chat with six named people and buy land in chat, on 40 attention a day.
 **Works now (for the agent):** pnpm workspace (protocol, sim, minds, server,
 client), strict TypeScript, Vitest. `make check-fast` runs plan lint,
 typecheck and unit tests. `make check` adds determinism and the Playwright
-smoke. The sim has `apply(world, command)` with `place_road` only. Tile
+smoke. The sim has `apply(world, command)` with `place_road` only, charging
+attention from `ATTENTION_COST` (D-015, refilled to 40 each day). Tile
 owners index a party list (frontier, Ops, town, people) via `partyOf`. The
 world has one town with roads and a market, 6x6 claims for player and rival
 (D-013), and 6 named people with homes, jobs, traits and asking factors, three
@@ -24,7 +25,7 @@ Minds have fake and `claude -p` backends and a governor, not yet scheduled.
 `/health` has the town and Op ids. The client has an inspector, an ownership
 overlay and town buildings. The rival's name is config (`GROUNDWORK_RIVAL_NAME`),
 sent in `welcome` as `opNames`. Service: Fedora box, port 7400.
-**Next (agent):** R1-04, attention points and the HUD, then R1-05 staking.
+**Next (agent):** R1-05 staking, then R1-06 the depot.
 **Waiting on Matt:** R0-look. Open the world and add notes to plan/PLAYTEST.md.
 **In progress, blocked:** nothing.
 **Notes for the next session:** the Ring 1 rules are DESIGN.md 23.2 done-when
@@ -36,4 +37,5 @@ and imports inside a package use the `.ts` extension. The server runs TS with
 Sim tests typecheck under `packages/sim/tsconfig.test.json`, client e2e under
 `packages/client/tsconfig.node.json`. shellcheck runs only on the Fedora box.
 New party kinds go at the end of `world.parties`, since owner values index it.
-Bump WORLD_FORMAT when an old save can no longer load.
+Bump WORLD_FORMAT when an old save can no longer load. A new command needs
+`COMMAND_TYPES` and an `ATTENTION_COST` entry (docs/dev.md "A command").

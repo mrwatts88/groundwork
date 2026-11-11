@@ -132,3 +132,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R1-03. make check ok, 124 unit tests, determinism hash 6e80b98b432ae1ab, Playwright 3 of 3. The verifier opened the town, overlay off and on, and inspector screenshots.
 - **Learned:** Ops had no display name anywhere. A display-only name in server config, sent in `welcome`, avoided a sim change and a WORLD_FORMAT bump. R1-12 can reuse it for the rival leader. `window.groundwork.centreOn(x, y, scale)` makes clicking any tile in Playwright reliable.
 - **Next:** R1-04 attention.
+
+## 2026-11-11, R1-04 attention
+
+- **Did:** every Op has `attention`, 40 at the start of each game day (`ATTENTION_PER_DAY` in protocol). `tick()` sets it back to 40 at each day boundary, so unused points do not carry over. One cost table, `ATTENTION_COST` in packages/sim/src/attention.ts: place_road 1, place_building 5 as a placeholder until R1-06. `apply()` rejects with `insufficient_attention` before dispatch and charges only on success. Attention is in the hash, the snapshot and the delta. `COMMAND_TYPES` in protocol lists every command type at runtime. The HUD shows `#hud-attention` as N/40. D-015 was added. README, docs/dev.md (A command, Attention) were updated.
+- **Verified:** verifier PASS R1-04. attention.test.ts 7 of 7, tsc guards fail on a missing cost entry, Playwright 3 of 3 reads 40/40 then 39/40. Determinism hash 8fcbcea33f2105bb matched in both processes. check-fast ran 131 tests.
+- **Learned:** checking and charging attention in `apply()`, around the handler, keeps every future command on one path. It works because handlers validate in full before changing anything. A missing snapshot field can default on load (format 3 saves get a full day), which avoids a WORLD_FORMAT bump and a world wipe. Python heredocs with backticks in Bash trip the safety check, so write edit scripts to the scratchpad.
+- **Next:** R1-05 staking.

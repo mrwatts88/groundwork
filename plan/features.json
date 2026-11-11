@@ -431,7 +431,9 @@
         "the HUD shows attention left as N/40 in #hud-attention, and the Playwright smoke reads it before and after placing a road",
         "the chosen costs are recorded as a decision in DESIGN.md section 24 (open question 21)"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-04. attention.test.ts 7/7 (40 per Op per day incl. rival, refill at tick 1440, no carry-over, cost table covers COMMAND_TYPES, insufficient_attention leaves hash unchanged, 30 roads + building = 35 <= 40). tsc guards fail on a missing cost entry (TS2322, TS2741). Playwright smoke 3/3 reads #hud-attention 40/40 then 39/40 and the server value. D-015 in DESIGN.md 24. make check-fast ok, 131 tests.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-05",
