@@ -151,3 +151,110 @@ test("the server serves the client and the socket on one port", async ({ request
   expect(health.status()).toBe(200);
   expect((await health.json()) as { ok: boolean }).toMatchObject({ ok: true });
 });
+
+test("the town, the ownership overlay and the inspector", async ({ page }) => {
+  mkdirSync(SHOT_DIR, { recursive: true });
+  await page.goto("/");
+  await waitReady(page);
+
+  // T centres on the town at full size: its houses, market and roads.
+  await page.keyboard.press("t");
+  const town = await page.evaluate(() => window.groundwork.world!.townCentre());
+  const townAt = await page.evaluate(({ x, y }) => window.groundwork.tileToClient(x, y), town);
+  expect(Math.abs(townAt.x - 640)).toBeLessThan(2);
+  expect(Math.abs(townAt.y - 400)).toBeLessThan(2);
+  await page.mouse.move(1270, 790);
+  await frames(page);
+  await page.screenshot({ path: join(SHOT_DIR, "4-town.png") });
+
+  // O toggles the ownership overlay. Zoom out to see every kind of land.
+  const all = await page.evaluate(() => {
+    const w = window.groundwork.world!;
+    const kinds = new Set<string>();
+    for (let i = 0; i < w.owner.length; i++) kinds.add(w.ownerKind(i));
+    return [...kinds].sort();
+  });
+  expect(all).toEqual(["frontier", "person", "rival", "town", "you"]);
+  await page.evaluate(() => {
+    const w = window.groundwork.world!;
+    window.groundwork.centreOn(w.width / 2, w.height / 2, 0.16);
+  });
+  await frames(page);
+  const off = await page.screenshot();
+  await page.screenshot({ path: join(SHOT_DIR, "5-overlay-off.png") });
+  await page.keyboard.press("o");
+  expect(await page.evaluate(() => window.groundwork.overlay())).toBe(true);
+  await expect(page.locator("#tool-overlay")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#legend")).toBeVisible();
+  await frames(page);
+  const on = await page.screenshot();
+  await page.screenshot({ path: join(SHOT_DIR, "6-overlay-on.png") });
+  expect(on.equals(off)).toBe(false);
+  await page.keyboard.press("o");
+  expect(await page.evaluate(() => window.groundwork.overlay())).toBe(false);
+  await expect(page.locator("#legend")).toBeHidden();
+
+  // Clicking a tile fills the inspector. Pick a town tile, a person's tile, a deposit,
+  // a rival tile and one of yours.
+  const picks = await page.evaluate(() => {
+    const w = window.groundwork.world!;
+    const find = (ok: (i: number) => boolean): { x: number; y: number } => {
+      for (let i = 0; i < w.owner.length; i++) if (ok(i)) return { x: i % w.width, y: Math.floor(i / w.width) };
+      throw new Error("no such tile");
+    };
+    return {
+      town: find((i) => w.ownerKind(i) === "town" && w.road[i] === 0 && i !== w.town.market && w.homeOf(i) === undefined),
+      market: find((i) => i === w.town.market),
+      person: find((i) => w.ownerKind(i) === "person"),
+      deposit: find((i) => w.terrain[i] === 5),
+      rival: find((i) => w.ownerKind(i) === "rival"),
+      you: find((i) => w.ownerKind(i) === "you"),
+    };
+  });
+  const expected = await page.evaluate((p) => {
+    const w = window.groundwork.world!;
+    const person = w.people.find((q) => w.ownerName(w.index(p.person.x, p.person.y)) === q.name);
+    const d = w.index(p.deposit.x, p.deposit.y);
+    return { town: w.town.name, person: person?.name, richness: w.richness[d], depositOwner: w.ownerName(d) };
+  }, picks);
+  expect(expected.person).toBeDefined();
+  expect(expected.richness).toBeGreaterThan(0);
+
+  const inspect = async (t: { x: number; y: number }): Promise<void> => {
+    await page.evaluate(({ x, y }) => window.groundwork.centreOn(x, y, 1), t);
+    await frames(page);
+    const at = await page.evaluate(({ x, y }) => window.groundwork.tileToClient(x, y), t);
+    await page.mouse.click(at.x, at.y);
+    await expect(page.locator("#inspector")).toBeVisible();
+    await expect(page.locator("#inspector-title")).toHaveText(`Tile (${t.x}, ${t.y})`);
+  };
+  const terrain = page.locator("#inspector-terrain");
+  const owner = page.locator("#inspector-owner");
+  const richness = page.locator("#inspector-richness");
+  const building = page.locator("#inspector-building");
+
+  await inspect(picks.town);
+  await expect(owner).toHaveText(expected.town);
+  await expect(terrain).toHaveText(/^(flat|hills|forest|rock)$/);
+  await expect(richness).toHaveText("none");
+  await page.screenshot({ path: join(SHOT_DIR, "7-inspector-town.png") });
+
+  await inspect(picks.market);
+  await expect(owner).toHaveText(expected.town);
+  await expect(building).toHaveText("market");
+
+  await inspect(picks.person);
+  await expect(owner).toHaveText(expected.person!);
+
+  await inspect(picks.deposit);
+  await expect(terrain).toHaveText("deposit");
+  await expect(owner).toHaveText(expected.depositOwner);
+  await expect(richness).toHaveText(String(expected.richness));
+  await page.screenshot({ path: join(SHOT_DIR, "8-inspector-deposit.png") });
+
+  await inspect(picks.rival);
+  await expect(owner).toHaveText("Redrock Mining");
+
+  await inspect(picks.you);
+  await expect(owner).toHaveText("You");
+});

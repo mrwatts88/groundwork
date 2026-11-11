@@ -27,6 +27,8 @@ export interface ServerConfig {
   readonly snapshotEveryTicks: number;
   /** The built client (index.html and assets), served at /. */
   readonly clientDir: string;
+  /** The rival Op's name, shown to the player (world settings, DESIGN.md 16). */
+  readonly rivalName: string;
 }
 
 export const DEFAULT_CONFIG: ServerConfig = {
@@ -41,6 +43,7 @@ export const DEFAULT_CONFIG: ServerConfig = {
   awayRate: 0.25,
   snapshotEveryTicks: 1440,
   clientDir: DEFAULT_CLIENT_DIR,
+  rivalName: "Redrock Mining",
 };
 
 const ENV: Readonly<Record<keyof ServerConfig, string>> = {
@@ -55,6 +58,7 @@ const ENV: Readonly<Record<keyof ServerConfig, string>> = {
   awayRate: "GROUNDWORK_AWAY_RATE",
   snapshotEveryTicks: "GROUNDWORK_SNAPSHOT_EVERY_TICKS",
   clientDir: "GROUNDWORK_CLIENT_DIR",
+  rivalName: "GROUNDWORK_RIVAL_NAME",
 };
 
 function num(env: Readonly<Record<string, string | undefined>>, key: string, fallback: number): number {
@@ -82,6 +86,7 @@ export function loadConfig(
     awayRate: num(env, ENV.awayRate, d.awayRate),
     snapshotEveryTicks: num(env, ENV.snapshotEveryTicks, d.snapshotEveryTicks),
     clientDir: env[ENV.clientDir] || d.clientDir,
+    rivalName: env[ENV.rivalName] || d.rivalName,
     ...overrides,
   };
   if (config.tickMs <= 0) throw new Error("tickMs must be positive");

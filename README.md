@@ -8,14 +8,23 @@ The design is in `DESIGN.md`. How it gets built is in `PROCESS.md`.
 
 ## Status
 
-Ring 0, foundation. You can open the world in a browser, look around the
-map and lay roads on your land. There is no economy yet.
+Ring 1, first playable, in progress. You can open the world in a browser,
+look around the map, find the town and its people, see who owns what and lay
+roads on your land. There is no economy yet.
 
 ## How to play
 
 The world server runs on the Fedora box. On the home network, open
 `http://laptop.local:7400` in a browser. Drag to pan, scroll to zoom, press
 Home to find your land and R to lay roads on it.
+
+Press T to centre the map on the town. Its houses have red pitched roofs and
+the market is the wide hall with a striped roof and a flag. Press O, or the
+Owners button, to colour every parcel by who owns it: yellow is yours, red is
+the rival's, white is the town's and blue belongs to one of the town's named
+people. Press O again to turn it off. Click any tile to open the inspector
+on the right. It shows the terrain, the owner by name and, on a deposit, how
+rich it is. Esc closes it.
 
 ## Run locally
 

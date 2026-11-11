@@ -16,8 +16,8 @@ function snapshot(): WorldSnapshot {
     height: 4,
     tick: 10,
     rngState: 0,
-    terrain: new Array<number>(16).fill(0),
-    richness: new Array<number>(16).fill(0),
+    terrain: [0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0],
+    richness: [0, 0, 0, 0, 0, 0, 0, 180, 0, 0, 0, 0, 0, 0, 0, 0],
     owner,
     road: new Array<number>(16).fill(0),
     ops: [
@@ -47,11 +47,30 @@ describe("ClientWorld", () => {
 
   it("names who holds a tile", () => {
     const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 });
-    expect(w.ownerName(0)).toBe("nobody");
-    expect(w.ownerName(5)).toBe("you");
+    expect(w.ownerName(0)).toBe("Nobody");
+    expect(w.ownerName(5)).toBe("You");
     expect(w.ownerName(15)).toBe("rival");
+    const named = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 }, { rival: "Redrock Mining" });
+    expect(named.ownerName(15)).toBe("Redrock Mining");
     expect(w.ownerName(12)).toBe("Harlow");
     expect(w.ownerName(3)).toBe("Ada Marsh");
+  });
+
+  it("sorts land by whose it is, for the ownership overlay", () => {
+    const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 });
+    expect([0, 5, 15, 12, 3].map((i) => w.ownerKind(i))).toEqual(["frontier", "you", "rival", "town", "person"]);
+  });
+
+  it("describes a tile for the inspector", () => {
+    const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 });
+    expect(w.inspect(3, 1)).toMatchObject({ terrain: "deposit", richness: 180, owner: "Nobody" });
+    expect(w.inspect(0, 3)).toMatchObject({ terrain: "flat", richness: undefined, owner: "Harlow", building: "market" });
+    expect(w.inspect(3, 0).owner).toBe("Ada Marsh");
+  });
+
+  it("finds the middle of the town", () => {
+    const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 });
+    expect(w.townCentre()).toEqual({ x: 0, y: 3 });
   });
 
   it("applies a tick delta and reports the changed tiles", () => {

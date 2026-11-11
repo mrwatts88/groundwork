@@ -11,6 +11,10 @@ export interface ClientDebug {
   world: ClientWorld | undefined;
   camera: Camera;
   mode(): Mode;
+  /** Whether the ownership overlay is on. */
+  overlay(): boolean;
+  /** Centre the camera on a tile at a zoom scale. */
+  centreOn(x: number, y: number, scale: number): void;
   /** Where a tile's centre is in page coordinates. */
   tileToClient(x: number, y: number): { x: number; y: number };
 }

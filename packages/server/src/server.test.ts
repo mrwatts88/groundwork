@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { TERRAIN, type ServerMessage, type WorldSnapshot } from "@groundwork/protocol";
 import { createWorld, ROAD_BUILDING, ROAD_NONE, toSnapshot, WORLD_FORMAT } from "@groundwork/sim";
 import { WebSocket } from "ws";
-import { loadConfig, type ServerConfig } from "./config.ts";
+import { DEFAULT_CONFIG, loadConfig, type ServerConfig } from "./config.ts";
 import { PLAYER_OP, RIVAL_OP } from "./game.ts";
 import { startServer, type Health, type RunningServer } from "./server.ts";
 import { resolveStatic } from "./static.ts";
@@ -119,6 +119,8 @@ describe("server", () => {
     expect(welcome.state.width).toBe(64);
     expect(welcome.state.ops.map((o) => o.id)).toEqual([PLAYER_OP, RIVAL_OP]);
     expect(welcome.state.format).toBe(WORLD_FORMAT);
+    // The rival's display name comes from config.
+    expect(welcome.opNames[RIVAL_OP]).toBe(DEFAULT_CONFIG.rivalName);
     expect(welcome.state.town.name.length).toBeGreaterThan(0);
     // Named people travel in the welcome state, each one an owner party.
     expect(welcome.state.people).toHaveLength(6);

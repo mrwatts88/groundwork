@@ -5,7 +5,7 @@
 import { Container, Graphics } from "pixi.js";
 import { TERRAIN } from "@groundwork/protocol";
 import { Camera, diamond, TILE_H, TILE_W, tileTop, worldToTile } from "./iso.ts";
-import { ROAD_BUILDING, ROAD_BUILT, ROAD_NONE, type ClientWorld } from "./state.ts";
+import { ROAD_BUILDING, ROAD_BUILT, ROAD_NONE, type ClientWorld, type OwnerKind } from "./state.ts";
 
 export const CHUNK = 16;
 
@@ -24,6 +24,22 @@ const RIVAL_BORDER = 0xe0533d;
 const TOWN_BORDER = 0xf4f1e8;
 /** Land a named person owns. */
 const PERSON_BORDER = 0x6fc3df;
+/** Ownership overlay fill per kind of owner. Frontier gets none. */
+export const OVERLAY_COLOR: Readonly<Record<Exclude<OwnerKind, "frontier">, number>> = {
+  you: 0xffd23f,
+  rival: 0xe0533d,
+  town: 0xf4f1e8,
+  person: 0x3fa7e0,
+};
+const OVERLAY_ALPHA = 0.55;
+
+/** Placeholder buildings (DESIGN.md 15): each type has its own silhouette and colours. */
+const HOUSE_WALL = 0xe8d2a6;
+const HOUSE_ROOF = 0xa8432f;
+const MARKET_WALL = 0xd9d4c4;
+const MARKET_AWNING = 0x2f8f83;
+const MARKET_STRIPE = 0xf6f1e0;
+const MARKET_FLAG = 0xf0b429;
 const ROAD_BUILT_COLOR = 0x4a4038;
 const ROAD_BUILDING_COLOR = 0xd9c39a;
 
@@ -46,7 +62,9 @@ export class MapRenderer {
   private readonly chunksX: number;
   private readonly chunksY: number;
   private readonly hover = new Graphics();
+  private readonly selection = new Graphics();
   private readonly dirty = new Set<number>();
+  private overlay = false;
 
   constructor(private readonly world: ClientWorld) {
     this.chunksX = Math.ceil(world.width / CHUNK);
@@ -58,7 +76,26 @@ export class MapRenderer {
     order.sort((a, b) => (a % this.chunksX) + Math.floor(a / this.chunksX) - ((b % this.chunksX) + Math.floor(b / this.chunksX)));
     for (const c of order) this.root.addChild(this.chunks[c]!);
     for (let c = 0; c < this.chunks.length; c++) this.drawChunk(c);
+    this.root.addChild(this.selection);
     this.root.addChild(this.hover);
+  }
+
+  get overlayOn(): boolean {
+    return this.overlay;
+  }
+
+  /** Turn the ownership overlay on or off. Every chunk redraws. */
+  setOverlay(on: boolean): void {
+    if (on === this.overlay) return;
+    this.overlay = on;
+    for (let c = 0; c < this.chunks.length; c++) this.dirty.add(c);
+  }
+
+  /** Outline the tile the inspector is showing. */
+  setSelected(tile: { x: number; y: number } | undefined): void {
+    this.selection.clear();
+    if (tile === undefined || !this.world.inBounds(tile.x, tile.y)) return;
+    this.selection.poly(diamond(tile.x, tile.y), true).stroke({ width: 3, color: 0x7df9ff, alpha: 0.95 });
   }
 
   /** Mark tiles as changed. They are redrawn on the next frame. */
@@ -183,6 +220,11 @@ export class MapRenderer {
       }
     }
 
+    if (this.overlay) {
+      const kind = w.ownerKind(i);
+      if (kind !== "frontier") g.poly(diamond(x, y), true).fill({ color: OVERLAY_COLOR[kind], alpha: OVERLAY_ALPHA });
+    }
+
     const owner = w.owner[i]!;
     if (owner !== 0) {
       const kind = w.parties[owner]?.kind;
@@ -208,5 +250,56 @@ export class MapRenderer {
         g.moveTo(d[a * 2]!, d[a * 2 + 1]!).lineTo(d[b * 2]!, d[b * 2 + 1]!).stroke({ width: 2.5, color });
       }
     }
+
+    if (i === w.town.market) drawMarket(g, cxp, cyp);
+    else if (w.homeOf(i) !== undefined) drawHouse(g, cxp, cyp);
   }
+}
+
+/** The two visible walls of an isometric box standing on a tile centred at (cx, cy). */
+function walls(g: Graphics, cx: number, cy: number, hw: number, hh: number, h: number, color: number): void {
+  g.poly([cx - hw, cy, cx, cy + hh, cx, cy + hh - h, cx - hw, cy - h], true).fill(shade(color, 0.85));
+  g.poly([cx, cy + hh, cx + hw, cy, cx + hw, cy - h, cx, cy + hh - h], true).fill(shade(color, 0.65));
+}
+
+/** A house: a small tall box with a pitched roof. */
+function drawHouse(g: Graphics, cx: number, cy: number): void {
+  const hw = 14;
+  const hh = 7;
+  const h = 14;
+  const ridge = 12;
+  walls(g, cx, cy, hw, hh, h, HOUSE_WALL);
+  const top = cy - h;
+  // Roof corners: left, top, right, bottom of the box's top face. The ridge runs from the
+  // middle of the left-top edge to the middle of the right-bottom edge, raised.
+  const L = [cx - hw, top] as const;
+  const T = [cx, top - hh] as const;
+  const R = [cx + hw, top] as const;
+  const B = [cx, top + hh] as const;
+  const p1 = [(L[0] + T[0]) / 2, (L[1] + T[1]) / 2 - ridge] as const;
+  const p2 = [(R[0] + B[0]) / 2, (R[1] + B[1]) / 2 - ridge] as const;
+  g.poly([T[0], T[1], R[0], R[1], p2[0], p2[1], p1[0], p1[1]], true).fill(shade(HOUSE_ROOF, 0.75));
+  g.poly([R[0], R[1], B[0], B[1], p2[0], p2[1]], true).fill(shade(HOUSE_WALL, 0.65));
+  g.poly([L[0], L[1], B[0], B[1], p2[0], p2[1], p1[0], p1[1]], true).fill(HOUSE_ROOF);
+  // A door on the left wall.
+  g.poly([cx - 8, cy + 3, cx - 4, cy + 5, cx - 4, cy - 3, cx - 8, cy - 5], true).fill(0x5a3b1e);
+}
+
+/** The market: a wide low hall with a striped awning roof and a flag. */
+function drawMarket(g: Graphics, cx: number, cy: number): void {
+  const hw = 26;
+  const hh = 13;
+  const h = 9;
+  walls(g, cx, cy, hw, hh, h, MARKET_WALL);
+  const top = cy - h;
+  g.poly([cx, top - hh, cx + hw, top, cx, top + hh, cx - hw, top], true).fill(MARKET_AWNING);
+  // Stripes across the awning, parallel to the left-top edge.
+  for (const f of [0.2, 0.45, 0.7]) {
+    const ax = cx - hw + hw * f;
+    const ay = top + hh * f;
+    g.moveTo(ax, ay).lineTo(ax + hw, ay - hh).stroke({ width: 3, color: MARKET_STRIPE, alpha: 0.9 });
+  }
+  // A flag on a pole at the back corner.
+  g.moveTo(cx, top - hh).lineTo(cx, top - hh - 22).stroke({ width: 2, color: 0x3b3128 });
+  g.poly([cx, top - hh - 22, cx + 12, top - hh - 18, cx, top - hh - 14], true).fill(MARKET_FLAG);
 }

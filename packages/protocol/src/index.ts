@@ -204,6 +204,8 @@ export interface WelcomeMessage {
   readonly date: string;
   readonly clock: ClockStatus;
   readonly state: WorldSnapshot;
+  /** Display names of Ops other than the player's, by Op id. From server config. */
+  readonly opNames: Readonly<Record<OpId, string>>;
 }
 
 export interface TickMessage {

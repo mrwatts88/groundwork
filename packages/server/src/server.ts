@@ -16,7 +16,7 @@ import { hashWorld, toSnapshot, WORLD_FORMAT } from "@groundwork/sim";
 import { WebSocket, WebSocketServer } from "ws";
 import { Clock } from "./clock.ts";
 import type { ServerConfig } from "./config.ts";
-import { Game } from "./game.ts";
+import { Game, RIVAL_OP } from "./game.ts";
 import { serveStatic } from "./static.ts";
 import { Store } from "./store.ts";
 
@@ -137,6 +137,7 @@ export async function startServer(config: ServerConfig, now: () => number = Date
       date: formatGameDate(game.world.tick),
       clock: clock.status(now()),
       state: toSnapshot(game.world),
+      opNames: { [RIVAL_OP]: config.rivalName },
     });
     ws.on("message", (data) => {
       touch();

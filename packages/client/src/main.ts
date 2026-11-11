@@ -2,12 +2,12 @@
 // (DESIGN.md 15). The client only sends commands. The server decides.
 
 import { Application } from "pixi.js";
-import { TERRAIN, TERRAIN_NAMES, type ServerMessage } from "@groundwork/protocol";
+import { TERRAIN, type ServerMessage } from "@groundwork/protocol";
 import { Camera, tileCenter } from "./iso.ts";
 import { Link, socketUrl, type LinkStatus } from "./net.ts";
 import type { ClientDebug, Mode } from "./debug.ts";
 import { MapRenderer } from "./render.ts";
-import { ClientWorld, formatClock, PLAYER_OP, ROAD_NONE } from "./state.ts";
+import { ClientWorld, formatClock, PLAYER_OP, ROAD_NONE, type TileInfo } from "./state.ts";
 
 function el<T extends HTMLElement>(id: string): T {
   const e = document.getElementById(id);
@@ -31,6 +31,14 @@ async function main(): Promise<void> {
   const hudMessage = el("hud-message");
   const hudConn = el("hud-conn");
   const roadButton = el<HTMLButtonElement>("tool-road");
+  const overlayButton = el<HTMLButtonElement>("tool-overlay");
+  const inspector = el<HTMLElement>("inspector");
+  const legend = el<HTMLElement>("legend");
+  const inspTitle = el("inspector-title");
+  const inspTerrain = el("inspector-terrain");
+  const inspOwner = el("inspector-owner");
+  const inspRichness = el("inspector-richness");
+  const inspBuilding = el("inspector-building");
   const speedButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("button[data-speed]"));
 
   const camera = new Camera();
@@ -38,12 +46,16 @@ async function main(): Promise<void> {
   let renderer: MapRenderer | undefined;
   let mode: Mode = "inspect";
   let hoverTile: { x: number; y: number } | undefined;
+  let selected: { x: number; y: number } | undefined;
+  let overlay = false;
 
   const debug: ClientDebug = {
     ready: false,
     world: undefined,
     camera,
     mode: () => mode,
+    overlay: () => overlay,
+    centreOn: (x, y, scale) => camera.centerOn(tileCenter(x, y), app.screen.width, app.screen.height, scale),
     tileToClient: (x, y) => {
       const s = camera.toScreen(tileCenter(x, y));
       const r = app.canvas.getBoundingClientRect();
@@ -85,6 +97,38 @@ async function main(): Promise<void> {
     refreshHover();
   };
 
+  const setOverlay = (on: boolean): void => {
+    overlay = on;
+    overlayButton.setAttribute("aria-pressed", String(on));
+    legend.hidden = !on;
+    renderer?.setOverlay(on);
+  };
+
+  const showInspector = (info: TileInfo | undefined): void => {
+    if (info === undefined) {
+      inspector.hidden = true;
+      return;
+    }
+    inspector.hidden = false;
+    inspector.dataset["owner"] = info.ownerKind;
+    inspTitle.textContent = `Tile (${info.x}, ${info.y})`;
+    inspTerrain.textContent = info.terrain;
+    inspOwner.textContent = info.owner;
+    inspRichness.textContent = info.richness === undefined ? "none" : String(info.richness);
+    inspBuilding.textContent = info.building ?? "none";
+  };
+
+  const refreshInspector = (): void => {
+    if (world === undefined || selected === undefined) return;
+    showInspector(world.inspect(selected.x, selected.y));
+  };
+
+  const goTown = (): void => {
+    if (world === undefined) return;
+    const c = world.townCentre();
+    camera.centerOn(tileCenter(c.x, c.y), app.screen.width, app.screen.height, HOME_SCALE);
+  };
+
   const goHome = (scale = HOME_SCALE): void => {
     if (world === undefined) return;
     const home = world.playerHome();
@@ -95,14 +139,17 @@ async function main(): Promise<void> {
     switch (msg.type) {
       case "welcome": {
         const first = world === undefined;
-        world = new ClientWorld(msg.state, msg.date, msg.clock);
+        world = new ClientWorld(msg.state, msg.date, msg.clock, msg.opNames);
         debug.world = world;
         if (renderer !== undefined) {
           app.stage.removeChild(renderer.root);
           renderer.root.destroy({ children: true });
         }
         renderer = new MapRenderer(world);
+        renderer.setOverlay(overlay);
+        renderer.setSelected(selected);
         app.stage.addChild(renderer.root);
+        refreshInspector();
         if (first) goHome(START_SCALE);
         refreshHud();
         debug.ready = true;
@@ -113,6 +160,7 @@ async function main(): Promise<void> {
         renderer.invalidate(world.applyDelta(msg.tick, msg.date, msg.clock, msg.delta));
         refreshHud();
         refreshHover();
+        refreshInspector();
         break;
       }
       case "command_result":
@@ -137,8 +185,11 @@ async function main(): Promise<void> {
       say(result.ok ? `Road ordered at (${t.x}, ${t.y})` : result.error.message);
       return;
     }
-    const i = world.index(t.x, t.y);
-    say(`(${t.x}, ${t.y}) ${TERRAIN_NAMES[world.terrain[i]!] ?? "?"}, owned by ${world.ownerName(i)}`);
+    selected = t;
+    renderer?.setSelected(t);
+    const info = world.inspect(t.x, t.y);
+    showInspector(info);
+    say(`(${t.x}, ${t.y}) ${info.terrain}, owned by ${info.owner}`);
   };
 
   // Pointer: drag pans, a click without a drag acts on the tile.
@@ -211,16 +262,26 @@ async function main(): Promise<void> {
       case "Home":
         goHome();
         break;
+      case "t":
+        goTown();
+        break;
+      case "o":
+        setOverlay(!overlay);
+        break;
       case "r":
         setMode(mode === "road" ? "inspect" : "road");
         break;
       case "Escape":
         setMode("inspect");
+        selected = undefined;
+        renderer?.setSelected(undefined);
+        showInspector(undefined);
         break;
     }
   });
 
   roadButton.addEventListener("click", () => setMode(mode === "road" ? "inspect" : "road"));
+  overlayButton.addEventListener("click", () => setOverlay(!overlay));
   for (const b of speedButtons) b.addEventListener("click", () => link.setSpeed(Number(b.dataset["speed"])));
 
   app.ticker.add(() => renderer?.update(camera, app.screen.width, app.screen.height));

@@ -66,6 +66,67 @@
       #hud-conn[data-status="closed"] {
         color: #ff8a7a;
       }
+      #inspector {
+        position: fixed;
+        top: 44px;
+        right: 12px;
+        min-width: 220px;
+        padding: 8px 12px;
+        background: rgba(20, 24, 20, 0.9);
+        border: 1px solid #3b4a3b;
+        border-left: 4px solid #56684f;
+        border-radius: 4px;
+      }
+      #inspector[data-owner="you"] {
+        border-left-color: #ffd23f;
+      }
+      #inspector[data-owner="rival"] {
+        border-left-color: #e0533d;
+      }
+      #inspector[data-owner="town"] {
+        border-left-color: #f4f1e8;
+      }
+      #inspector[data-owner="person"] {
+        border-left-color: #3fa7e0;
+      }
+      #inspector h2 {
+        margin: 0 0 6px;
+        font-size: 14px;
+      }
+      #inspector dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 12px;
+        margin: 0;
+      }
+      #inspector dt {
+        color: #a7b39b;
+      }
+      #inspector dd {
+        margin: 0;
+      }
+      #legend {
+        position: fixed;
+        bottom: 40px;
+        left: 12px;
+        display: flex;
+        gap: 10px;
+        font-size: 12px;
+        background: rgba(20, 24, 20, 0.8);
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+      #legend[hidden],
+      #inspector[hidden] {
+        display: none;
+      }
+      #legend i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+        border-radius: 2px;
+      }
       #help {
         position: fixed;
         bottom: 8px;
@@ -90,10 +151,30 @@
       </div>
       <div class="field"><span class="label">Cash</span><span id="hud-cash">...</span></div>
       <button type="button" id="tool-road" aria-pressed="false">Road (R)</button>
+      <button type="button" id="tool-overlay" aria-pressed="false">Owners (O)</button>
       <span id="hud-message"></span>
       <span id="hud-conn" data-status="connecting">connecting</span>
     </div>
-    <div id="help">Drag or arrow keys to pan. Wheel or +/- to zoom. Home to find your land. R for road, Esc to stop.</div>
+    <aside id="inspector" hidden>
+      <h2 id="inspector-title">Tile</h2>
+      <dl>
+        <dt>Terrain</dt>
+        <dd id="inspector-terrain"></dd>
+        <dt>Owner</dt>
+        <dd id="inspector-owner"></dd>
+        <dt>Richness</dt>
+        <dd id="inspector-richness"></dd>
+        <dt>Building</dt>
+        <dd id="inspector-building"></dd>
+      </dl>
+    </aside>
+    <div id="legend" hidden>
+      <span><i style="background: #ffd23f"></i>You</span>
+      <span><i style="background: #e0533d"></i>Rival</span>
+      <span><i style="background: #f4f1e8"></i>Town</span>
+      <span><i style="background: #3fa7e0"></i>People</span>
+    </div>
+    <div id="help">Drag or arrow keys to pan. Wheel or +/- to zoom. Home finds your land, T the town. Click a tile to inspect it. O shows who owns what. R for road, Esc to stop.</div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

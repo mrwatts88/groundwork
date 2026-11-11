@@ -22,7 +22,9 @@ describe("config", () => {
       GROUNDWORK_AWAY_AFTER_MS: "5000",
       GROUNDWORK_AWAY_RATE: "0.5",
       GROUNDWORK_PORT: "9000",
+      GROUNDWORK_RIVAL_NAME: "Blackwater Ore",
     });
+    expect(c.rivalName).toBe("Blackwater Ore");
     expect(c.dataDir).toBe("/srv/groundwork");
     expect(c.tickMs).toBe(100);
     expect(c.maxSpeed).toBe(8);

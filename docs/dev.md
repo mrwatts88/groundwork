@@ -91,6 +91,7 @@ DESIGN.md 11.1 and 11.2.
 | `GROUNDWORK_AWAY_RATE` | 0.25 | Clock rate while away (1 game day per 4 real hours) |
 | `GROUNDWORK_SNAPSHOT_EVERY_TICKS` | 1440 | Ticks between snapshots (1 game day) |
 | `GROUNDWORK_CLIENT_DIR` | packages/client/dist | The built client served at `/` |
+| `GROUNDWORK_RIVAL_NAME` | Redrock Mining | The rival Op's name, sent to the client in `welcome` |
 
 ### Clock
 
@@ -111,7 +112,7 @@ tick reached, so a restart resumes exactly.
 
 Types live in `packages/protocol`. The client sends `command` (with an id
 that comes back in the result) and `set_speed`. The server sends `welcome`
-with the full world on connect, a `tick` with the delta every tick,
+with the full world and the names of the other Ops (`opNames`) on connect, a `tick` with the delta every tick,
 `command_result` for every command, and `error` for a message it cannot
 parse. Every accepted command is stamped with the current tick, which is
 where a replay applies it.
@@ -179,20 +180,33 @@ dark one.
 
 The town has six named people, each with a home in town, a job and a
 personality. Three of them own a small parcel outside the town, and one of
-those parcels lies near a deposit. Click a tile and the HUD names its owner,
-by name when a person holds it.
+those parcels lies near a deposit. Each home is drawn as a house (light walls,
+red pitched roof) and the market tile as a wide low hall with a striped teal
+roof and a flag. Every building type gets its own shape and colours in
+`render.ts`.
+
+Click a tile and the inspector panel (`#inspector`) shows its terrain, the
+owner by name (You, the rival's name, the town's name or the person's name),
+deposit richness and any building on it. `ClientWorld.inspect` builds what it
+shows. The HUD message repeats the terrain and owner.
+
+The ownership overlay (`O` or the Owners button) fills each tile by
+`ClientWorld.ownerKind`: yours yellow, the rival's red, the town's white,
+named people's blue. A legend shows while it is on.
 
 Controls: drag or the arrow keys pan, the wheel or `+`/`-` zoom, Home centres
-on your land, `R` or the Road button toggles road mode, Esc leaves it. In road
-mode a click orders a road on that tile. Outside road mode a click shows what
+on your land, `T` centres on the town, `O` toggles the ownership overlay, `R`
+or the Road button toggles road mode, Esc leaves it and closes the
+inspector. In road mode a click orders a road on that tile. Outside road mode a click shows what
 the tile is in the HUD. The HUD shows the game date, the clock (speed and
 mode), speed buttons and cash.
 
 For live reload while working on the client, run the server on 8787 and
 `pnpm --filter @groundwork/client dev`. Vite proxies `/ws` and `/health` to it.
 
-`window.groundwork` exposes the client state, the camera and
-`tileToClient(x, y)` for the smoke test and for poking at in the console.
+`window.groundwork` exposes the client state, the camera, the overlay state,
+`centreOn(x, y, scale)` and `tileToClient(x, y)` for the smoke test and for
+poking at in the console.
 
 ### Smoke test
 
@@ -201,7 +215,11 @@ For live reload while working on the client, run the server on 8787 and
 that serves the built client. It checks the HUD date and clock speed, zooms
 and pans, saves `test-results/smoke/1-map.png`, places a road on the
 player's land with a click and checks it on screen (`3-road.png`) and on the
-server. Install the browser once with `pnpm exec playwright install chromium`.
+server. A second test presses T and saves the town (`4-town.png`), saves the
+whole map with the ownership overlay off and on (`5-overlay-off.png`,
+`6-overlay-on.png`), then clicks a town tile, the market, a person's tile, a
+deposit, a rival tile and one of yours and reads `#inspector` from the DOM
+(`7-inspector-town.png`, `8-inspector-deposit.png`). Install the browser once with `pnpm exec playwright install chromium`.
 
 ## The minds
 
