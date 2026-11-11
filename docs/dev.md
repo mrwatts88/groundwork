@@ -19,6 +19,7 @@ pnpm install
 | `pnpm -s typecheck` | Runs `tsc` in each package, one after another. |
 | `pnpm -s test` | Runs every unit test with Vitest from the repo root. |
 | `pnpm exec vitest` | Vitest in watch mode while you work. |
+| `pnpm --filter @groundwork/minds smoke` | One real `claude -p` call as the NPC Ada Fenwick. Writes a `mind_usage` row to the world SQLite. Spends real budget, so it is not in any check. Run it on the Fedora box. |
 
 If `node_modules` is missing, `make check-fast` runs `pnpm install` first.
 
