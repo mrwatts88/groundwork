@@ -12,3 +12,4 @@ export * from "./fake.ts";
 export * from "./claude.ts";
 export * from "./governor.ts";
 export * from "./mind.ts";
+export * from "./sqlite.ts";

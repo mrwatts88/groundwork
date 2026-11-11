@@ -235,7 +235,7 @@
         "the smoke run records a usage row in the server's SQLite with tokens under 3000 and ok true",
         "the smoke script is not part of pnpm test or make check"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-11",
