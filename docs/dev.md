@@ -173,8 +173,14 @@ world itself. It sends commands and the server decides.
 | `src/main.ts` | Input, the HUD and wiring |
 
 Placeholder art is flat shapes drawn in code. Your land has a yellow border,
-rival land a red one. A road under construction is a pale diamond, a finished
-road a dark one.
+rival land a red one, town land a light one and land a named person owns a
+light blue one. A road under construction is a pale diamond, a finished road a
+dark one.
+
+The town has six named people, each with a home in town, a job and a
+personality. Three of them own a small parcel outside the town, and one of
+those parcels lies near a deposit. Click a tile and the HUD names its owner,
+by name when a person holds it.
 
 Controls: drag or the arrow keys pan, the wheel or `+`/`-` zoom, Home centres
 on your land, `R` or the Road button toggles road mode, Esc leaves it. In road
