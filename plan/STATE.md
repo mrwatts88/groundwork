@@ -18,11 +18,13 @@ The client is in (R0-06): `pnpm build`, then start the server and open
 `http://localhost:8787` to see the isometric map, pan and zoom, lay roads on
 your land and watch the date and clock speed in the HUD. `make check` runs
 the Playwright smoke test. A lean headless `claude -p` NPC call was proven on the Fedora box
-(DESIGN.md 13.4).
+(DESIGN.md 13.4). The minds skeleton is in (R0-07): a Mind with a fake
+backend, a `claude -p` backend, schema-checked replies, a budget governor
+(120 calls per hour) and a usage row per call. Nothing schedules it yet.
 
 **In progress:** nothing.
 
-**Next (agent):** R0-07 minds skeleton, then whatever `plan.py next` lists.
+**Next (agent):** none actionable until R0-02 lands. Then whatever `plan.py next` lists.
 
 **Waiting on Matt:** R0-02 publish the public repo. Until it lands there is no
 `origin` remote and nothing has been pushed. Commits from R0-03 on are local.

@@ -54,3 +54,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-06. Smoke 2 of 2: map screenshot shows six terrain kinds, a click places a road seen in the screenshot (pixel diff) and on the server, and the HUD date and speed are read from the DOM. `/`, `/health` and `/ws` share one port. check-fast is green with 55 tests.
 - **Learned:** Playwright 1.65 needed a fresh `pnpm exec playwright install chromium`, and headless Chromium renders Pixi WebGL fine. For a pixel-diff check, park the pointer away from the tile, or the hover outline changes the clip. `window.groundwork` gives tests tile-to-screen coordinates without guessing. Push pending R0-02.
 - **Next:** R0-07 minds skeleton. Matt: R0-02.
+
+## 2026-11-11, R0-07 minds skeleton
+
+- **Did:** minds package with the Mind interface and typed MindError, a reply schema (commands plus notes) as JSON schema and a validator built on `parseCommand`, a FakeBackend (recordings by sha256 prompt hash, or scripted rules), a ClaudeCliBackend (the exact 13.4 flags, absolute binary and models per tier from config, an empty temp working dir per call, an injected process runner), a BudgetGovernor (120 deliberation calls per real hour, optional daily cap, its own conversation rate limit, low priority refused from 80 percent, interval stretch) and `Mind.think`, which writes one usage row per backend call through an injected recorder. docs/dev.md has a minds section.
+- **Verified:** verifier PASS R0-07. 81 tests pass with claude off the PATH. No test spawns claude. check-fast is green.
+- **Learned:** on the Mac, `claude` sits in the nvm node bin dir next to `node`, so "claude off the PATH" needs a scratch bin dir with only node and pnpm symlinked. Avoid TS parameter properties in packages the server imports, because `--experimental-strip-types` cannot erase them. Push pending R0-02.
+- **Next:** nothing agent-actionable until Matt does R0-02.

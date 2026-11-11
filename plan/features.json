@@ -161,7 +161,9 @@
         "every call records a usage row (agent, backend, model, tokens, ms, ok) through an injected recorder",
         "no test spawns the real claude binary (verifier greps the tests and runs them with claude off the PATH)"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-07. fake replays by prompt hash with schema-valid output; claude -p backend tested on a stubbed process (exact 13.4 argv, empty temp cwd, structured_output, typed errors); governor defers or refuses past 120/h, conversation within its own limit; usage rows on every backend call through an injected recorder; 81/81 tests with claude off PATH; check-fast ok",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-08",
