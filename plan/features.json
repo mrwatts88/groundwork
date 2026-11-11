@@ -59,7 +59,7 @@
         "introducing a type error in packages/sim makes make check-fast exit non-zero (verifier tries it on a scratch copy or reverts it)",
         "README.md and docs/dev.md exist and say how to install and run the checks"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-04",

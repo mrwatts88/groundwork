@@ -28,8 +28,12 @@ py-check:
 	@for f in $(PY_FILES); do python3 -m py_compile "$$f" || exit 1; done
 
 ts-check:
-	@if [[ -f pnpm-workspace.yaml ]]; then pnpm -s typecheck && pnpm -s test; \
-	else echo "ts-check: no workspace yet (R0-03)"; fi
+	@if [[ ! -d node_modules ]]; then pnpm install --frozen-lockfile; fi
+	@echo "typecheck: tsc --noEmit in every package"
+	@pnpm -s typecheck
+	@echo "typecheck: ok"
+	@echo "vitest: running unit tests"
+	@pnpm -s test
 
 slow:
 	@if [[ -f pnpm-workspace.yaml ]] && grep -q '"test:slow"' package.json; then pnpm -s test:slow; \

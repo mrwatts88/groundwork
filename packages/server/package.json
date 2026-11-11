@@ -1,0 +1,17 @@
+{
+  "name": "@groundwork/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@groundwork/minds": "workspace:*",
+    "@groundwork/protocol": "workspace:*",
+    "@groundwork/sim": "workspace:*"
+  }
+}
