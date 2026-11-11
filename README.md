@@ -13,8 +13,9 @@ map and lay roads on your land. There is no economy yet.
 
 ## How to play
 
-Not yet. Once the world server is deployed it will be reachable at
-`http://laptop.local:7400` on the home network.
+The world server runs on the Fedora box. On the home network, open
+`http://laptop.local:7400` in a browser. Drag to pan, scroll to zoom, press
+Home to find your land and R to lay roads on it.
 
 ## Run locally
 
