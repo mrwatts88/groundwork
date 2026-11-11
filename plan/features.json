@@ -287,7 +287,9 @@
         "tests/rings/ring0.sh exits 0",
         "the commit is tagged ring-0"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-review. tests/rings/ring0.sh -> ring0: ok (exit 0). make check-fast green with plan lint, typecheck and 82 unit tests. Determinism hash 659408debd1ae3d5 matches across two processes, no Math.random or Date in packages/sim/src. The service on the Fedora box is enabled with linger on, health ok from the Mac, and a restart resumes at the same tick (62 to 62). Playwright on http://laptop.local:7400 drew the isometric map with no console errors. The fake Mind backend passes its tests, and the live smoke made one claude-cli call (haiku, 1635 tokens, schema-valid). The minds tests never call a real model. The world changes only through apply() in game.ts. Annotated tag ring-0 is on a502f25. README How to play updated.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-look",

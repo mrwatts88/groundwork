@@ -96,3 +96,11 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-11. Script ended ring0: ok, shellcheck clean on the Fedora box.
 - **Learned:** shellcheck is not on the Mac. Lint a script with `ssh -o BatchMode=yes laptop "shellcheck -S warning -" < file`. The Fedora clone only updates on deploy, so the smoke there runs the deployed code.
 - **Next:** R0-review.
+
+## 2026-11-11, R0-review Ring 0 review
+
+- **Did:** ran make check-fast, make check and tests/rings/ring0.sh, and checked every Ring 0 done-when line and the section 1 invariants. Fixed the one gap: README "How to play" still said the server was not deployed. Tagged `ring-0` on a502f25, pushed main and the tag, and deployed with health ok.
+- **Verified:** verifier PASS R0-review. ring0.sh ended ring0: ok. Determinism hash 659408debd1ae3d5 matched in both processes. A service restart resumed at the same tick. Playwright on laptop.local:7400 drew the map with no errors. One live claude-cli call on haiku was schema-valid. No Math.random or Date in the sim, and tests never call a real model.
+- **Learned:** the item's acceptance asks for the ring-N tag, but the ring-review skill tags only after PASS. Under autopilot the builder tagged locally before READY and pushed after PASS.
+- **Process:** proposal for Matt: in the ring-review skill, tag before the verifier runs and push the tag only on PASS (delete it on FAIL). Also, shellcheck is missing on the Mac, so `make check-fast` only syntax-checks scripts there. Installing it (`brew install shellcheck`) would close that gap.
+- **Next:** R1-plan. R0-look waits on Matt and does not gate it.
