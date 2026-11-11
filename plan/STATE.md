@@ -25,9 +25,8 @@ Minds have fake and `claude -p` backends and a governor, not yet scheduled.
 `/health` has the town and Op ids. The client has an inspector, an ownership
 overlay and town buildings. The rival's name is config (`GROUNDWORK_RIVAL_NAME`),
 sent in `welcome` as `opNames`. Service: Fedora box, port 7400.
-**Next (agent):** R1-05 staking, then R1-06 the depot.
+**Next (agent):** R1-05 staking, then R1-06 the depot. **Blocked:** nothing.
 **Waiting on Matt:** R0-look. Open the world and add notes to plan/PLAYTEST.md.
-**In progress, blocked:** nothing.
 **Notes for the next session:** the Ring 1 rules are DESIGN.md 23.2 done-when
 and decision D-012. Plan order is build order. Development is on the Mac. On
 the Fedora box, `claude` and `pnpm` live in `~/.local/bin`, off the
