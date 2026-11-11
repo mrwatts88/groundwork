@@ -10,8 +10,11 @@ workspace with five packages (protocol, sim, minds, server, client), strict
 TypeScript and Vitest is in place. `make check-fast` typechecks every package
 and runs the unit tests. The sim core is in (R0-04): a seeded 128x128
 map, a seeded RNG, a tick, `apply(world, command)` with `place_road`, and a state
-hash. `make slow` checks that two processes reach the same hash. Nothing is
-visible yet. A lean headless `claude -p` NPC call was proven on the Fedora box
+hash. `make slow` checks that two processes reach the same hash. The server
+is in (R0-05): `pnpm --filter @groundwork/server start` serves `/health` and a
+WebSocket at `/ws`, runs the present, speed-up and away clock, and keeps a
+daily SQLite snapshot plus the command log, so a restart resumes exactly.
+Nothing is visible yet. A lean headless `claude -p` NPC call was proven on the Fedora box
 (DESIGN.md 13.4).
 
 **In progress:** nothing.
@@ -28,6 +31,7 @@ visible yet. A lean headless `claude -p` NPC call was proven on the Fedora box
 the Fedora box. On the Fedora box, `claude` and later `pnpm` live in
 `~/.local/bin`, which non-interactive ssh does not have on its PATH. Use
 absolute paths. Packages export their `src/index.ts` directly and imports
-inside a package use the `.ts` extension. The toolchain is TypeScript 7 and
+inside a package use the `.ts` extension. The server runs its TS directly
+with `node --experimental-strip-types`. The toolchain is TypeScript 7 and
 Vitest 5. Sim test files typecheck under `packages/sim/tsconfig.test.json`,
 which has node types. The src tsconfig has none, which keeps node out of the sim.

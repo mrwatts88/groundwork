@@ -56,10 +56,12 @@ Mind backend and never call a real model.
 pnpm --filter @groundwork/server start
 ```
 
-It serves `GET /health` and a WebSocket at `/ws` on port 8787. The world lives
-in `data/groundwork.db` under the directory you start it from (SQLite through
-`node:sqlite`, so nothing native to build). Stop it with Ctrl-C and start it
-again. It picks up at the tick where it stopped.
+It serves `GET /health` and a WebSocket at `/ws` on port 8787. pnpm runs the
+script from `packages/server`, so the world lives in
+`packages/server/data/groundwork.db`. Set `GROUNDWORK_DATA_DIR` to put it
+somewhere else. The store is SQLite through `node:sqlite`, so there is nothing
+native to build. `data/` is gitignored. Stop the server with Ctrl-C and start
+it again. It picks up at the tick where it stopped.
 
 Every setting comes from an environment variable. The defaults match
 DESIGN.md 11.1 and 11.2.

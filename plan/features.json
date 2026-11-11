@@ -112,7 +112,9 @@
         "a test shows the clock switches to away mode after the configured idle time with no client input, and back on input",
         "clock rates and the data dir come from config, with defaults matching DESIGN.md 11.1"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-05. Real server plus ws client: welcome and consecutive ticks, place_road in the next delta, already_road, out_of_bounds and malformed frames return errors, a restart on the same dir keeps the tick and hash (also across snapshots), /health has tick, date, clock and clients, away after idle and back on input, config defaults match 11.1, check-fast 44 tests green",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-06",
