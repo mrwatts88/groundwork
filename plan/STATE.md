@@ -3,7 +3,6 @@
 Rewritten at the end of every session. Under 40 lines.
 
 **Ring:** 0, foundation.
-
 **Works now:** the design (DESIGN.md) and the build process (PROCESS.md,
 skills, hooks, plan) are in place. The repo is public at
 https://github.com/mrwatts88/groundwork and `main` is pushed (R0-02). A pnpm
@@ -29,7 +28,6 @@ from the Mac. Backups go to `~/groundwork-backups/` nightly, keeping 14.
 **Next (agent):** R0-10 live mind smoke on the Fedora box: one real claude -p call.
 
 **Waiting on Matt:** nothing. R0-look comes after R0-review. **In progress, blocked:** nothing.
-
 **Notes for the next session:** development is on the Mac
 (`cd ~/code/groundwork && claude`, then `/next`). The world server runs on
 the Fedora box. The world lives in `~/.local/share/groundwork` there. On the Fedora box, `claude` and `pnpm` live in
