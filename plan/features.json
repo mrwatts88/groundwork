@@ -355,7 +355,7 @@
         "GET /health includes the town name and the list of Op ids (server test)",
         "make check-fast is green"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R1-02",
