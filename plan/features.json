@@ -161,7 +161,7 @@
         "every call records a usage row (agent, backend, model, tokens, ms, ok) through an injected recorder",
         "no test spawns the real claude binary (verifier greps the tests and runs them with claude off the PATH)"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-08",

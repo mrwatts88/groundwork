@@ -147,6 +147,29 @@ and pans, saves `test-results/smoke/1-map.png`, places a road on the
 player's land with a click and checks it on screen (`3-road.png`) and on the
 server. Install the browser once with `pnpm exec playwright install chromium`.
 
+## The minds
+
+`packages/minds` holds the Mind skeleton (DESIGN.md 13). Nothing schedules it
+yet. `new Mind({ backend, governor, recorder }).think(request)` asks the
+governor first, then the backend, records one usage row per backend call and
+returns `ok` with a reply, `deferred` (try again later), `refused` (fall back
+to reflex) or `error` with a typed `MindError`.
+
+| File | Holds |
+|---|---|
+| `src/reply.ts` | The reply schema (commands plus notes) as JSON schema, and its validator |
+| `src/types.ts` | `MindRequest`, `MindBackend`, `UsageRow`, `MindError` and its codes |
+| `src/fake.ts` | The fake backend: recorded replies by prompt hash, or scripted rules |
+| `src/claude.ts` | The `claude -p` backend: the exact flags, an empty temp working dir per call |
+| `src/governor.ts` | Calls per real hour and day, the conversation rate limit, interval stretch |
+| `src/mind.ts` | `Mind` and an in-memory usage recorder |
+
+The `claude -p` backend takes the absolute binary path and the model per tier
+from config. Its process runner is injected, so tests stub it. No test runs
+the real `claude`. Tests use `FakeBackend`. To record a reply for a prompt,
+call `fake.record(request, reply)` or pass `recordings` keyed by
+`promptHash(request)`.
+
 ## Adding things
 
 How to add a building, a good, a command and an agent type is written here as
