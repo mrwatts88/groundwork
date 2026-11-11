@@ -154,3 +154,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R1-06 on the second run. The first run failed because a road could be laid on a depot tile. make check ok, 148 unit tests, determinism hash aaaf826178c71d7c, Playwright 5 of 5 (11-depot-building.png, 12-depot-built.png).
 - **Learned:** a new kind of thing on a tile needs every existing command that takes a tile to respect it. Check each `apply` handler, not just the new one. One spec table (`BUILDING_SPEC`) keeps the next building a single row.
 - **Next:** R1-07 vehicles and the harvester route.
+
+## 2026-11-11, R1-07 vehicles and the harvester route
+
+- **Did:** `buy_vehicle` (harvester $800, 3 attention, at an active depot the Op owns) and `set_route` (a deposit the Op owns with ore and a road path, 2 attention). packages/sim/src/vehicles.ts has `VEHICLE_SPEC`, `findPath` (BFS over road tiles, E/W/S/N) and `updateVehicles`: idle, outbound, mining (1 ore per 12 min, load 10, richness down 1 each), returning, then unload into the depot's new `ore` stock while it is staffed. It waits before a road under construction, holds its load at an idle depot and waits at home once the deposit is dry. `place_building` refuses a deposit tile with `on_deposit`, and the client hover matches. Vehicles, `nextVehicle` and depot ore are in the snapshot, hash and delta. Old saves load with none. The scenario log runs a harvester per Op. D-018 was added. README and docs/dev.md (A vehicle) were updated.
+- **Verified:** verifier PASS R1-07 on the first run. make check ok, 163 unit tests, determinism hash 3a5891bbca04b5b7 in both processes, Playwright 5 of 5. The 20 road tile scenario delivers within 2 game days of a fresh world.
+- **Learned:** a test helper that searches the generated map for a fitting site (`harvesterSite`), across seeds if needed, beats hand-placed coordinates and keeps setup on apply(). Storing the planned path on the vehicle keeps a trip stable when roads change mid-trip, and the hash covers it.
+- **Next:** R1-08 the town market, trucks and the cash ledger.

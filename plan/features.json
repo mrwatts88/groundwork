@@ -513,7 +513,9 @@
         "a test shows a deposit mined down to 0 richness stops yielding and its harvester waits at the depot",
         "vehicles, their cargo and depot stock are in the snapshot, hash and delta, and the determinism tests and pnpm test:slow still match"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-07. vehicles.test.ts covers buy_vehicle cost/attention/placement and typed refusals, set_route shortest road path, mining (richness -10, depot ore 10), set_route refusals (no_path, not_owner, not_deposit, not_your_vehicle, unknown_vehicle, exhausted) with unchanged hash, 20-road-tile scenario delivering within 2 game days from tick 0, exhausted deposit leaving the harvester idle at the depot. Snapshot/hash/delta tests including the server restart replay pass. pnpm test:slow: both processes hash=3a5891bbca04b5b7, smoke 5/5. make check ok, 163 tests.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-08",
