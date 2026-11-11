@@ -73,6 +73,7 @@ export class Game {
       road: diff(this.sentRoad, this.world.road),
       ops: this.world.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention })),
       builds: this.world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
+      surveys: this.world.surveys.map((s) => ({ tile: s.tile, op: s.op, remaining: s.remaining })),
     };
   }
 }

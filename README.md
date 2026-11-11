@@ -16,7 +16,21 @@ roads on your land. There is no economy yet.
 
 The world server runs on the Fedora box. On the home network, open
 `http://laptop.local:7400` in a browser. Drag to pan, scroll to zoom, press
-Home to find your land and R to lay roads on it.
+Home to find your land and R to lay roads.
+
+The build sidebar on the right holds the tools: Road (R) and Stake (C). Click
+one to turn it on and click it again, or press Esc, to turn it off. Roads can
+go on your own land and across the frontier, the land no one owns yet, so you
+can build a road out to a deposit before you own it. You cannot lay a road on
+land the rival, the town or a named person owns.
+
+To stake land, pick Stake (C) and click a frontier tile. You pay a claim fee
+of $200, or $600 on a deposit, and 3 attention. The tile is then surveyed for
+6 game hours. It shows a dashed outline, a post at each corner and a pennant
+in your colour (the rival's stakes are red). The inspector's Survey row says
+who is surveying it and how long is left. When the survey is done the tile is
+yours. You cannot stake water, land someone owns, or a tile someone else is
+already surveying.
 
 Press T to centre the map on the town. Its houses have red pitched roofs and
 the market is the wide hall with a striped roof and a flag. Press O, or the
@@ -28,9 +42,9 @@ rich it is. Esc closes it.
 
 Attention in the HUD is how much you can still do today, shown as N/40.
 Every operation, yours and the rival's, gets 40 points at the start of each
-game day. Laying a road costs 1. Points you do not use are gone at the next
-day, so they do not pile up. When you run out, a road is refused until the
-day turns.
+game day. Laying a road costs 1 and staking a tile costs 3. Points you do not use are gone at the next
+day, so they do not pile up. When you run out, a road or a stake is refused
+until the day turns.
 
 ## Run locally
 

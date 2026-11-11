@@ -14,7 +14,15 @@ export {
   refillAttention,
   type PlannedCommandType,
 } from "./attention.ts";
-export { apply, ROAD_BUILD_TICKS, ROAD_COST } from "./apply.ts";
+export {
+  apply,
+  CLAIM_FEE,
+  CLAIM_FEE_DEPOSIT,
+  claimFee,
+  ROAD_BUILD_TICKS,
+  ROAD_COST,
+  SURVEY_TICKS,
+} from "./apply.ts";
 export { hashWorld } from "./hash.ts";
 export {
   CLAIM_SIZE,
@@ -56,12 +64,14 @@ export {
   ROAD_BUILDING,
   ROAD_BUILT,
   ROAD_NONE,
+  surveyAt,
   tileIndex,
   tileOwner,
   WORLD_FORMAT,
   type Build,
   type Op,
   type Person,
+  type Survey,
   type Town,
   type World,
 } from "./world.ts";

@@ -73,7 +73,8 @@ The store records a world format version (`WORLD_FORMAT` in
 `packages/sim/src/world.ts`). If the db file holds an older format, the server
 keeps it as `groundwork.format-<N>.db` in the same folder and starts a fresh
 world. A Ring 0 file has no version and counts as format 1. Format 2 had the
-town and the rival. Format 3 added the town's named people.
+town and the rival. Format 3 added the town's named people. A format 3 save
+from before staking has no `surveys` and loads with none.
 
 Every setting comes from an environment variable. The defaults match
 DESIGN.md 11.1 and 11.2.
@@ -187,17 +188,25 @@ roof and a flag. Every building type gets its own shape and colours in
 
 Click a tile and the inspector panel (`#inspector`) shows its terrain, the
 owner by name (You, the rival's name, the town's name or the person's name),
-deposit richness and any building on it. `ClientWorld.inspect` builds what it
+deposit richness, any building on it and any survey under way
+(`#inspector-survey`: who and how long is left). `ClientWorld.inspect` builds what it
 shows. The HUD message repeats the terrain and owner.
 
 The ownership overlay (`O` or the Owners button) fills each tile by
 `ClientWorld.ownerKind`: yours yellow, the rival's red, the town's white,
 named people's blue. A legend shows while it is on.
 
+The build sidebar (`#sidebar`, DESIGN.md 15) holds the tools: Road
+(`#tool-road`) and Stake (`#tool-stake`). `TOOLS` in `main.ts` maps each
+button to a mode. A tile under survey is drawn with a dashed outline, corner
+posts and a pennant in the staking Op's colour (`drawSurvey` in `render.ts`).
+
 Controls: drag or the arrow keys pan, the wheel or `+`/`-` zoom, Home centres
 on your land, `T` centres on the town, `O` toggles the ownership overlay, `R`
-or the Road button toggles road mode, Esc leaves it and closes the
-inspector. In road mode a click orders a road on that tile. Outside road mode a click shows what
+or the Road button toggles road mode, `C` or the Stake button toggles stake
+mode, Esc leaves either and closes the inspector. In road mode a click orders
+a road on that tile, in stake mode it stakes the tile. The hover outline is
+green where the tool would likely work and red where it would not. Outside road mode a click shows what
 the tile is in the HUD. The HUD shows the game date, the clock (speed and
 mode), speed buttons, cash and attention left today as N/40
 (`#hud-attention`).
@@ -220,7 +229,11 @@ server, and that `#hud-attention` drops by 1. A second test presses T and saves 
 whole map with the ownership overlay off and on (`5-overlay-off.png`,
 `6-overlay-on.png`), then clicks a town tile, the market, a person's tile, a
 deposit, a rival tile and one of yours and reads `#inspector` from the DOM
-(`7-inspector-town.png`, `8-inspector-deposit.png`). Install the browser once with `pnpm exec playwright install chromium`.
+(`7-inspector-town.png`, `8-inspector-deposit.png`). A third test runs on a
+second, fast-clock test server (port 8792, 25 ms ticks, data in
+`test-results/smoke-data-fast`): it stakes a frontier tile from the sidebar,
+sees it drawn as surveyed (`9-surveying.png`), and waits for `#inspector` to
+name You as owner (`10-staked.png`). Install the browser once with `pnpm exec playwright install chromium`.
 
 ## The minds
 
@@ -267,3 +280,15 @@ each of those systems lands.
 Each Op has `attention`, refilled to `ATTENTION_PER_DAY` (40, in protocol)
 by `tick()` at every day boundary (`refillAttention`). A command that costs
 more than the Op has left is rejected with `insufficient_attention`.
+
+### Land and staking
+
+`stake_claim` (DESIGN.md 5.3, D-016) takes one frontier tile. It charges
+`claimFee(terrain)` (`CLAIM_FEE` 200, `CLAIM_FEE_DEPOSIT` 600) and 3
+attention, and adds a `Survey` to `world.surveys`. `tick()` counts each survey
+down from `SURVEY_TICKS` (360, 6 game hours) and gives the tile to the Op at
+0. It is refused with `on_water`, `not_frontier` (someone owns it),
+`being_surveyed` (any Op is already surveying it), `out_of_bounds` or
+`insufficient_cash`. Surveys travel in the snapshot and in every tick delta.
+`place_road` takes frontier tiles as well as the Op's own and refuses other
+owners' land with `not_owner`.

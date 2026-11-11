@@ -32,7 +32,7 @@ export const TERRAIN_NAMES: readonly TerrainName[] = [
 /** An Operation id. The player Op and every rival Op use the same kind of id. */
 export type OpId = string;
 
-/** Lay one road tile on a parcel the Op owns (DESIGN.md 6.3). */
+/** Lay one road tile on the Op's own land or on frontier (DESIGN.md 6.3, D-012). */
 export interface PlaceRoad {
   readonly type: "place_road";
   readonly op: OpId;
@@ -40,8 +40,19 @@ export interface PlaceRoad {
   readonly y: number;
 }
 
+/**
+ * Stake one frontier tile (DESIGN.md 5.3). The Op pays a claim fee now and
+ * owns the tile once the survey is done.
+ */
+export interface StakeClaim {
+  readonly type: "stake_claim";
+  readonly op: OpId;
+  readonly x: number;
+  readonly y: number;
+}
+
 /** Every command any actor can issue. The one command API takes these (DESIGN.md 12.2). */
-export type Command = PlaceRoad;
+export type Command = PlaceRoad | StakeClaim;
 
 export type CommandType = Command["type"];
 
@@ -49,7 +60,7 @@ export type CommandType = Command["type"];
  * Every command type, at runtime. The sim's attention cost table is checked
  * against this list, and the line below fails to compile if a type is missing.
  */
-export const COMMAND_TYPES = ["place_road"] as const satisfies readonly CommandType[];
+export const COMMAND_TYPES = ["place_road", "stake_claim"] as const satisfies readonly CommandType[];
 type MissingCommandType = Exclude<CommandType, (typeof COMMAND_TYPES)[number]>;
 const allCommandTypesListed: [MissingCommandType] extends [never] ? true : never = true;
 void allCommandTypesListed;
@@ -65,6 +76,8 @@ export type CommandErrorCode =
   | "out_of_bounds"
   | "on_water"
   | "not_owner"
+  | "not_frontier"
+  | "being_surveyed"
   | "already_road"
   | "insufficient_cash"
   | "insufficient_attention";
@@ -175,6 +188,14 @@ export interface BuildState {
   readonly remaining: number;
 }
 
+/** A frontier tile an Op has staked. It becomes the Op's when remaining reaches 0. */
+export interface SurveyState {
+  readonly tile: number;
+  readonly op: OpId;
+  /** Game minutes until the survey is done. */
+  readonly remaining: number;
+}
+
 export interface WorldSnapshot {
   /** The world format version (see WORLD_FORMAT in sim). Ring 0 snapshots have none. */
   readonly format: number;
@@ -189,6 +210,8 @@ export interface WorldSnapshot {
   readonly road: readonly number[];
   readonly ops: readonly OpState[];
   readonly builds: readonly BuildState[];
+  /** Stakes still being surveyed, in the order they were made. Missing in saves from before R1-05. */
+  readonly surveys: readonly SurveyState[];
   readonly parties: readonly Party[];
   readonly town: TownState;
   /** The town's named people, in creation order. */
@@ -203,6 +226,7 @@ export interface WorldDelta {
   readonly road: readonly TileChange[];
   readonly ops: readonly OpState[];
   readonly builds: readonly BuildState[];
+  readonly surveys: readonly SurveyState[];
 }
 
 // ---------------------------------------------------------------------------
@@ -268,11 +292,13 @@ function isInt(v: unknown): v is number {
 export function parseCommand(v: unknown): Parsed<Command> {
   if (!isRecord(v)) return { ok: false, message: "command must be an object" };
   switch (v["type"]) {
-    case "place_road": {
+    case "place_road":
+    case "stake_claim": {
+      const type = v["type"];
       const { op, x, y } = v;
-      if (typeof op !== "string" || op.length === 0) return { ok: false, message: "place_road needs an op id" };
-      if (!isInt(x) || !isInt(y)) return { ok: false, message: "place_road needs integer x and y" };
-      return { ok: true, value: { type: "place_road", op, x, y } };
+      if (typeof op !== "string" || op.length === 0) return { ok: false, message: `${type} needs an op id` };
+      if (!isInt(x) || !isInt(y)) return { ok: false, message: `${type} needs integer x and y` };
+      return { ok: true, value: { type, op, x, y } };
     }
     default:
       return { ok: false, message: `unknown command type ${JSON.stringify(v["type"])}` };

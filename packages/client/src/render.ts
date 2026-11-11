@@ -5,7 +5,8 @@
 import { Container, Graphics } from "pixi.js";
 import { TERRAIN } from "@groundwork/protocol";
 import { Camera, diamond, TILE_H, TILE_W, tileTop, worldToTile } from "./iso.ts";
-import { ROAD_BUILDING, ROAD_BUILT, ROAD_NONE, type ClientWorld, type OwnerKind } from "./state.ts";
+import type { Mode } from "./debug.ts";
+import { PLAYER_OP, ROAD_BUILDING, ROAD_BUILT, ROAD_NONE, type ClientWorld, type OwnerKind } from "./state.ts";
 
 export const CHUNK = 16;
 
@@ -40,6 +41,7 @@ const MARKET_WALL = 0xd9d4c4;
 const MARKET_AWNING = 0x2f8f83;
 const MARKET_STRIPE = 0xf6f1e0;
 const MARKET_FLAG = 0xf0b429;
+const SURVEY_POST = 0x5a3b1e;
 const ROAD_BUILT_COLOR = 0x4a4038;
 const ROAD_BUILDING_COLOR = 0xd9c39a;
 
@@ -125,11 +127,11 @@ export class MapRenderer {
     }
   }
 
-  /** Outline the tile under the pointer. ok picks the colour in road mode. */
-  setHover(tile: { x: number; y: number } | undefined, mode: "inspect" | "road", ok: boolean): void {
+  /** Outline the tile under the pointer. ok picks the colour in the road and stake tools. */
+  setHover(tile: { x: number; y: number } | undefined, mode: Mode, ok: boolean): void {
     this.hover.clear();
     if (tile === undefined || !this.world.inBounds(tile.x, tile.y)) return;
-    const color = mode === "road" ? (ok ? 0x6dff6d : 0xff5a5a) : 0xffffff;
+    const color = mode === "inspect" ? 0xffffff : ok ? 0x6dff6d : 0xff5a5a;
     this.hover.poly(diamond(tile.x, tile.y), true).stroke({ width: 2, color, alpha: 0.95 });
   }
 
@@ -251,9 +253,44 @@ export class MapRenderer {
       }
     }
 
+    const survey = w.surveyAt(i);
+    if (survey !== undefined) drawSurvey(g, x, y, survey.op === PLAYER_OP ? PLAYER_BORDER : RIVAL_BORDER);
+
     if (i === w.town.market) drawMarket(g, cxp, cyp);
     else if (w.homeOf(i) !== undefined) drawHouse(g, cxp, cyp);
   }
+}
+
+/**
+ * A tile being surveyed: a dashed outline in the staking Op's colour, a post at
+ * each corner and a pennant in the middle.
+ */
+function drawSurvey(g: Graphics, x: number, y: number, color: number): void {
+  const d = diamond(x, y);
+  for (let e = 0; e < 4; e++) {
+    const ax = d[e * 2]!;
+    const ay = d[e * 2 + 1]!;
+    const bx = d[((e + 1) % 4) * 2]!;
+    const by = d[((e + 1) % 4) * 2 + 1]!;
+    for (let k = 0; k < 4; k++) {
+      const f0 = (k * 2 + 0.5) / 8;
+      const f1 = (k * 2 + 1.5) / 8;
+      g.moveTo(ax + (bx - ax) * f0, ay + (by - ay) * f0)
+        .lineTo(ax + (bx - ax) * f1, ay + (by - ay) * f1)
+        .stroke({ width: 2, color });
+    }
+  }
+  const inset = 0.8;
+  const t = tileTop(x, y);
+  const cx = t.x;
+  const cy = t.y + TILE_H / 2;
+  for (let e = 0; e < 4; e++) {
+    const px = cx + (d[e * 2]! - cx) * inset;
+    const py = cy + (d[e * 2 + 1]! - cy) * inset;
+    g.moveTo(px, py).lineTo(px, py - 8).stroke({ width: 2, color: SURVEY_POST });
+  }
+  g.moveTo(cx, cy + 2).lineTo(cx, cy - 16).stroke({ width: 1.5, color: SURVEY_POST });
+  g.poly([cx, cy - 16, cx + 10, cy - 13, cx, cy - 10], true).fill(color);
 }
 
 /** The two visible walls of an isometric box standing on a tile centred at (cx, cy). */

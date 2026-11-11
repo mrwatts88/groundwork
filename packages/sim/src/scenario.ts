@@ -1,5 +1,6 @@
 // A scripted world and command log for determinism tests and the hash CLI
-// (DESIGN.md 17). The log mixes valid roads with commands the sim must reject.
+// (DESIGN.md 17). The log mixes valid roads and stakes with commands the sim
+// must reject.
 
 import { TERRAIN, type LoggedCommand } from "@groundwork/protocol";
 import { createWorld } from "./mapgen.ts";
@@ -43,6 +44,16 @@ export function scenarioLog(world: World, ticks: number = SCENARIO_TICKS): Logge
       tick: nextInt(rng, ticks),
       command: { type: "place_road", op, x: market % world.width, y: Math.floor(market / world.width) },
     });
+    // Stakes and roads on random tiles: frontier is accepted, the rest refused,
+    // and both Ops sometimes reach for the same tile.
+    for (let n = 0; n < 40; n++) {
+      const x = nextInt(rng, world.width);
+      const y = nextInt(rng, world.height);
+      log.push({ tick: nextInt(rng, ticks), command: { type: "stake_claim", op, x, y } });
+      const other = world.ops[(k + 1) % world.ops.length]!.id;
+      log.push({ tick: nextInt(rng, ticks), command: { type: "stake_claim", op: other, x, y } });
+      log.push({ tick: nextInt(rng, ticks), command: { type: "place_road", op, x, y } });
+    }
     if (water >= 0) {
       const x = water % world.width;
       const y = Math.floor(water / world.width);

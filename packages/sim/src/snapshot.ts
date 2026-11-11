@@ -23,6 +23,7 @@ export function toSnapshot(world: World): WorldSnapshot {
     road: Array.from(world.road),
     ops: world.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention })),
     builds: world.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
+    surveys: world.surveys.map((s) => ({ tile: s.tile, op: s.op, remaining: s.remaining })),
     parties: world.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: world.town.id, name: world.town.name, market: world.town.market },
     people: world.people.map(copyPerson),
@@ -63,6 +64,8 @@ export function fromSnapshot(s: WorldSnapshot): World {
     // Format 3 saves from before attention existed load with a full day's budget.
     ops: s.ops.map((op) => ({ id: op.id, cash: op.cash, attention: op.attention ?? ATTENTION_PER_DAY })),
     builds: s.builds.map((b) => ({ tile: b.tile, remaining: b.remaining })),
+    // Format 3 saves from before staking have no surveys.
+    surveys: (s.surveys ?? []).map((v) => ({ tile: v.tile, op: v.op, remaining: v.remaining })),
     parties: s.parties.map((p) => ({ kind: p.kind, id: p.id })),
     town: { id: s.town.id, name: s.town.name, market: s.town.market },
     people: s.people.map(copyPerson),

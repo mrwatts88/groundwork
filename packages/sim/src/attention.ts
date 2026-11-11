@@ -18,6 +18,7 @@ export type PlannedCommandType = "place_building";
 /** The one attention cost table. Every command type must have an entry. */
 export const ATTENTION_COST: Readonly<Record<CommandType | PlannedCommandType, number>> = {
   place_road: 1,
+  stake_claim: 3,
   place_building: 5,
 };
 

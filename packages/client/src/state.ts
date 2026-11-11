@@ -10,6 +10,7 @@ import {
   type OpState,
   type Party,
   type PersonState,
+  type SurveyState,
   type TownState,
   type WorldDelta,
   type WorldSnapshot,
@@ -36,6 +37,16 @@ export interface TileInfo {
   readonly richness: number | undefined;
   /** A building on the tile, if any: "market" or the home of a named person. */
   readonly building: string | undefined;
+  /** Who is surveying the tile and how long is left, or undefined if no one is. */
+  readonly survey: string | undefined;
+}
+
+/** Game minutes as hours and minutes, for the inspector. */
+export function formatMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
 }
 
 export class ClientWorld {
@@ -46,6 +57,8 @@ export class ClientWorld {
   readonly road: Uint8Array;
   readonly richness: Uint8Array;
   ops: readonly OpState[];
+  /** Stakes being surveyed (DESIGN.md 5.3). */
+  surveys: readonly SurveyState[];
   /** Display names of other Ops, by id. */
   readonly opNames: Readonly<Record<OpId, string>>;
   /** Owner values index this list. 0 is frontier. */
@@ -64,6 +77,7 @@ export class ClientWorld {
     this.road = Uint8Array.from(state.road);
     this.richness = Uint8Array.from(state.richness);
     this.ops = state.ops;
+    this.surveys = state.surveys ?? [];
     this.opNames = opNames;
     this.parties = state.parties;
     this.town = state.town;
@@ -88,6 +102,12 @@ export class ClientWorld {
       this.road[i] = v;
       changed.push(i);
     }
+    // A survey that starts or ends changes how its tile looks.
+    const before = new Set(this.surveys.map((s) => s.tile));
+    const after = new Set(delta.surveys.map((s) => s.tile));
+    for (const t of before) if (!after.has(t)) changed.push(t);
+    for (const t of after) if (!before.has(t)) changed.push(t);
+    this.surveys = delta.surveys;
     return changed;
   }
 
@@ -122,7 +142,17 @@ export class ClientWorld {
     if (party === undefined || party.kind === "frontier") return "Nobody";
     if (party.kind === "town") return this.town.name;
     if (party.kind === "person") return this.people.find((p) => p.id === party.id)?.name ?? party.id;
-    return this.opNames[party.id] ?? party.id;
+    return this.opName(party.id);
+  }
+
+  /** The survey under way on a tile, if any. */
+  surveyAt(tile: number): SurveyState | undefined {
+    return this.surveys.find((s) => s.tile === tile);
+  }
+
+  /** The display name of an Op: You for the player. */
+  opName(id: OpId): string {
+    return id === PLAYER_OP ? "You" : (this.opNames[id] ?? id);
   }
 
   /** The named person whose home is on a tile, if any. */
@@ -135,6 +165,7 @@ export class ClientWorld {
     const i = this.index(x, y);
     const terrain = this.terrain[i]!;
     const home = this.homeOf(i);
+    const survey = this.surveyAt(i);
     return {
       x,
       y,
@@ -143,6 +174,8 @@ export class ClientWorld {
       ownerKind: this.ownerKind(i),
       richness: terrain === TERRAIN.deposit ? this.richness[i] : undefined,
       building: i === this.town.market ? "market" : home !== undefined ? `home of ${home.name}` : undefined,
+      survey:
+        survey === undefined ? undefined : `${this.opName(survey.op)}, ${formatMinutes(survey.remaining)} left`,
     };
   }
 

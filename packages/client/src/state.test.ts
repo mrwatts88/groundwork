@@ -25,6 +25,7 @@ function snapshot(): WorldSnapshot {
       { id: "rival", cash: 5_000, attention: 40 },
     ],
     builds: [],
+    surveys: [],
     parties: [
       { kind: "frontier", id: "frontier" },
       { kind: "op", id: "player" },
@@ -80,13 +81,42 @@ describe("ClientWorld", () => {
       11,
       "Day 1, 00:11",
       { mode: "speedup", rate: 4, speed: 4 },
-      { owner: [], road: [[5, ROAD_BUILDING]], ops: [{ id: "player", cash: 9_990, attention: 39 }, { id: "rival", cash: 5_000, attention: 40 }], builds: [] },
+      { owner: [], road: [[5, ROAD_BUILDING]], ops: [{ id: "player", cash: 9_990, attention: 39 }, { id: "rival", cash: 5_000, attention: 40 }], builds: [], surveys: [] },
     );
     expect(changed).toEqual([5]);
     expect(w.road[5]).toBe(ROAD_BUILDING);
     expect(w.tick).toBe(11);
     expect(w.date).toBe("Day 1, 00:11");
     expect(w.playerCash()).toBe(9_990);
+  });
+});
+
+describe("surveys", () => {
+  it("reports a survey starting and ending as changed tiles and names the staker in the inspector", () => {
+    const w = new ClientWorld(snapshot(), "Day 1, 00:10", { mode: "present", rate: 1, speed: 1 }, { rival: "Redrock" });
+    const ops = w.ops;
+    const clock = { mode: "present", rate: 1, speed: 1 } as const;
+    const started = w.applyDelta(11, "Day 1, 00:11", clock, {
+      owner: [],
+      road: [],
+      ops,
+      builds: [],
+      surveys: [{ tile: 0, op: "player", remaining: 359 }, { tile: 1, op: "rival", remaining: 60 }],
+    });
+    expect(started.sort()).toEqual([0, 1]);
+    expect(w.inspect(0, 0).survey).toBe("You, 5 h 59 min left");
+    expect(w.inspect(1, 0).survey).toBe("Redrock, 1 h left");
+    expect(w.inspect(2, 0).survey).toBeUndefined();
+    const done = w.applyDelta(12, "Day 1, 00:12", clock, {
+      owner: [[0, 1]],
+      road: [],
+      ops,
+      builds: [],
+      surveys: [{ tile: 1, op: "rival", remaining: 59 }],
+    });
+    expect(done).toEqual([0, 0]);
+    expect(w.inspect(0, 0).survey).toBeUndefined();
+    expect(w.inspect(0, 0).owner).toBe("You");
   });
 });
 

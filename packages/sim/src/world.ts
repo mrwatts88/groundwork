@@ -18,6 +18,13 @@ export interface Build {
   remaining: number;
 }
 
+/** A frontier tile an Op has staked, being surveyed (DESIGN.md 5.3). */
+export interface Survey {
+  readonly tile: number;
+  readonly op: OpId;
+  remaining: number;
+}
+
 export const ROAD_NONE = 0;
 export const ROAD_BUILDING = 1;
 export const ROAD_BUILT = 2;
@@ -61,6 +68,8 @@ export interface World {
   readonly ops: Op[];
   /** Construction in the order it was ordered. */
   readonly builds: Build[];
+  /** Stakes being surveyed, in the order they were made. */
+  readonly surveys: Survey[];
   /**
    * Everyone who can own land, in a fixed order: frontier first, then the
    * Ops, then the town, then named people. Owner values index this list.
@@ -88,6 +97,11 @@ export function partyOf(world: World, owner: number): Party {
   const party = world.parties[owner];
   if (party === undefined) throw new Error(`owner ${owner} is not a party`);
   return party;
+}
+
+/** The survey on a tile, if one is under way. */
+export function surveyAt(world: World, tile: number): Survey | undefined {
+  return world.surveys.find((s) => s.tile === tile);
 }
 
 /** The party that owns a tile. */

@@ -9,6 +9,12 @@ import type { ClientDebug, Mode } from "./debug.ts";
 import { MapRenderer } from "./render.ts";
 import { ClientWorld, formatClock, PLAYER_OP, ROAD_NONE, type TileInfo } from "./state.ts";
 
+/** Sidebar tools and the mode each one turns on. */
+const TOOLS: readonly { readonly id: string; readonly mode: Exclude<Mode, "inspect"> }[] = [
+  { id: "tool-road", mode: "road" },
+  { id: "tool-stake", mode: "stake" },
+];
+
 function el<T extends HTMLElement>(id: string): T {
   const e = document.getElementById(id);
   if (e === null) throw new Error(`missing #${id}`);
@@ -31,7 +37,7 @@ async function main(): Promise<void> {
   const hudAttention = el("hud-attention");
   const hudMessage = el("hud-message");
   const hudConn = el("hud-conn");
-  const roadButton = el<HTMLButtonElement>("tool-road");
+  const toolButtons = TOOLS.map((t) => ({ mode: t.mode, button: el<HTMLButtonElement>(t.id) }));
   const overlayButton = el<HTMLButtonElement>("tool-overlay");
   const inspector = el<HTMLElement>("inspector");
   const legend = el<HTMLElement>("legend");
@@ -40,6 +46,7 @@ async function main(): Promise<void> {
   const inspOwner = el("inspector-owner");
   const inspRichness = el("inspector-richness");
   const inspBuilding = el("inspector-building");
+  const inspSurvey = el("inspector-survey");
   const speedButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("button[data-speed]"));
 
   const camera = new Camera();
@@ -82,22 +89,30 @@ async function main(): Promise<void> {
     }
   };
 
-  const canPlaceRoad = (t: { x: number; y: number }): boolean => {
+  /** Whether the current tool would likely be accepted on a tile. The server decides. */
+  const canUseTool = (t: { x: number; y: number }): boolean => {
     if (world === undefined || !world.inBounds(t.x, t.y)) return false;
     const i = world.index(t.x, t.y);
-    return world.owner[i] === world.playerOwner() && world.road[i] === ROAD_NONE && world.terrain[i] !== TERRAIN.water;
+    if (world.terrain[i] === TERRAIN.water) return false;
+    const owner = world.owner[i]!;
+    if (mode === "road") return (owner === 0 || owner === world.playerOwner()) && world.road[i] === ROAD_NONE;
+    if (mode === "stake") return owner === 0 && world.surveyAt(i) === undefined;
+    return true;
   };
 
   const refreshHover = (): void => {
-    renderer?.setHover(hoverTile, mode, hoverTile !== undefined && canPlaceRoad(hoverTile));
+    renderer?.setHover(hoverTile, mode, hoverTile !== undefined && canUseTool(hoverTile));
   };
 
   const setMode = (m: Mode): void => {
     mode = m;
-    roadButton.setAttribute("aria-pressed", String(m === "road"));
-    app.canvas.style.cursor = m === "road" ? "crosshair" : "default";
+    for (const t of toolButtons) t.button.setAttribute("aria-pressed", String(t.mode === m));
+    app.canvas.style.cursor = m === "inspect" ? "default" : "crosshair";
     refreshHover();
   };
+
+  /** A tool button or key turns its tool on, or off if it is already on. */
+  const toggleTool = (m: Exclude<Mode, "inspect">): void => setMode(mode === m ? "inspect" : m);
 
   const setOverlay = (on: boolean): void => {
     overlay = on;
@@ -118,6 +133,7 @@ async function main(): Promise<void> {
     inspOwner.textContent = info.owner;
     inspRichness.textContent = info.richness === undefined ? "none" : String(info.richness);
     inspBuilding.textContent = info.building ?? "none";
+    inspSurvey.textContent = info.survey ?? "none";
   };
 
   const refreshInspector = (): void => {
@@ -185,6 +201,11 @@ async function main(): Promise<void> {
     if (mode === "road") {
       const result = await link.command({ type: "place_road", op: PLAYER_OP, x: t.x, y: t.y });
       say(result.ok ? `Road ordered at (${t.x}, ${t.y})` : result.error.message);
+      return;
+    }
+    if (mode === "stake") {
+      const result = await link.command({ type: "stake_claim", op: PLAYER_OP, x: t.x, y: t.y });
+      say(result.ok ? `Claim staked at (${t.x}, ${t.y}). Surveying.` : result.error.message);
       return;
     }
     selected = t;
@@ -271,7 +292,10 @@ async function main(): Promise<void> {
         setOverlay(!overlay);
         break;
       case "r":
-        setMode(mode === "road" ? "inspect" : "road");
+        toggleTool("road");
+        break;
+      case "c":
+        toggleTool("stake");
         break;
       case "Escape":
         setMode("inspect");
@@ -282,7 +306,7 @@ async function main(): Promise<void> {
     }
   });
 
-  roadButton.addEventListener("click", () => setMode(mode === "road" ? "inspect" : "road"));
+  for (const t of toolButtons) t.button.addEventListener("click", () => toggleTool(t.mode));
   overlayButton.addEventListener("click", () => setOverlay(!overlay));
   for (const b of speedButtons) b.addEventListener("click", () => link.setSpeed(Number(b.dataset["speed"])));
 

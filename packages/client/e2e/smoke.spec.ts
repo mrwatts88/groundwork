@@ -266,3 +266,85 @@ test("the town, the ownership overlay and the inspector", async ({ page }) => {
   await inspect(picks.you);
   await expect(owner).toHaveText("You");
 });
+
+/** The fast-clock test server from playwright.config.ts. A tick there is 25 ms. */
+const FAST_URL = "http://127.0.0.1:8792/";
+
+test("staking frontier land from the sidebar", async ({ page }) => {
+  mkdirSync(SHOT_DIR, { recursive: true });
+  await page.goto(FAST_URL);
+  await waitReady(page);
+
+  // The build sidebar has the Road and Stake tools.
+  const sidebar = page.locator("#sidebar");
+  await expect(sidebar.locator("#tool-road")).toBeVisible();
+  await expect(sidebar.locator("#tool-stake")).toBeVisible();
+
+  // The frontier tile nearest your land that is dry, not a deposit, and has no road.
+  const target = await page.evaluate(() => {
+    const w = window.groundwork.world!;
+    const home = w.playerHome();
+    let best: { x: number; y: number } | undefined;
+    let bestD = Infinity;
+    for (let y = 0; y < w.height; y++) {
+      for (let x = 0; x < w.width; x++) {
+        const i = w.index(x, y);
+        if (w.owner[i] !== 0 || w.road[i] !== 0 || w.terrain[i] === 2 || w.terrain[i] === 5) continue;
+        const d = (x - home.x) ** 2 + (y - home.y) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = { x, y };
+        }
+      }
+    }
+    return best!;
+  });
+  await page.evaluate(({ x, y }) => window.groundwork.centreOn(x, y, 1.5), target);
+  const at = await page.evaluate(({ x, y }) => window.groundwork.tileToClient(x, y), target);
+  const clip = { x: at.x - 60, y: at.y - 50, width: 120, height: 80 };
+  await page.mouse.move(1100, 760);
+  await frames(page);
+  const before = await page.screenshot({ clip });
+
+  await page.locator("#tool-stake").click();
+  await expect(page.locator("#tool-stake")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#tool-road")).toHaveAttribute("aria-pressed", "false");
+  await page.mouse.click(at.x, at.y);
+  await expect(page.locator("#hud-message")).toHaveText(`Claim staked at (${target.x}, ${target.y}). Surveying.`);
+  await page.waitForFunction(({ x, y }) => {
+    const w = window.groundwork.world!;
+    return w.surveyAt(w.index(x, y)) !== undefined;
+  }, target);
+
+  // The tile is drawn as being surveyed: stakes and a pennant in your colour.
+  await page.mouse.move(1100, 760);
+  await frames(page);
+  const surveying = await page.screenshot({ clip });
+  await page.screenshot({ path: join(SHOT_DIR, "9-surveying.png") });
+  expect(surveying.equals(before)).toBe(false);
+
+  // Turn the tool off and inspect the tile: nobody owns it yet and you are surveying it.
+  await page.locator("#tool-stake").click();
+  await expect(page.locator("#tool-stake")).toHaveAttribute("aria-pressed", "false");
+  await page.mouse.click(at.x, at.y);
+  await expect(page.locator("#inspector-title")).toHaveText(`Tile (${target.x}, ${target.y})`);
+  const owner = page.locator("#inspector-owner");
+  const survey = page.locator("#inspector-survey");
+  // The survey can finish while this runs, so either state is fine here.
+  await expect(survey).toHaveText(/^(You, .* left|none)$/);
+
+  // Once the survey is done the inspector names you as the owner.
+  await expect(owner).toHaveText("You", { timeout: 30_000 });
+  await expect(survey).toHaveText("none");
+  await page.mouse.move(1100, 760);
+  await frames(page);
+  await page.screenshot({ path: join(SHOT_DIR, "10-staked.png") });
+
+  // The server agrees, and the claim fee came out of your cash.
+  const state = await serverState(page);
+  const i = target.y * state.width + target.x;
+  const me = state.parties.findIndex((p) => p.kind === "op" && p.id === "player");
+  expect(state.owner[i]).toBe(me);
+  expect(state.ops.find((op) => op.id === "player")!.cash).toBe(10_000 - 200);
+  expect(state.surveys).toEqual([]);
+});

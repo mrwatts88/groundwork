@@ -66,10 +66,54 @@
       #hud-conn[data-status="closed"] {
         color: #ff8a7a;
       }
-      #inspector {
+      #sidebar {
         position: fixed;
         top: 44px;
         right: 12px;
+        width: 132px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        background: rgba(20, 24, 20, 0.9);
+        border: 1px solid #3b4a3b;
+        border-radius: 4px;
+        user-select: none;
+      }
+      #sidebar h2 {
+        margin: 0 0 2px;
+        font-size: 12px;
+        color: #a7b39b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      #sidebar button {
+        font: inherit;
+        color: inherit;
+        text-align: left;
+        background: #2d3a2d;
+        border: 1px solid #56684f;
+        border-radius: 4px;
+        padding: 6px 8px;
+        cursor: pointer;
+      }
+      #sidebar button small {
+        display: block;
+        color: #a7b39b;
+        font-size: 11px;
+      }
+      #sidebar button[aria-pressed="true"] {
+        background: #c9a227;
+        border-color: #f0cf5a;
+        color: #1b1b12;
+      }
+      #sidebar button[aria-pressed="true"] small {
+        color: #3b3412;
+      }
+      #inspector {
+        position: fixed;
+        top: 44px;
+        right: 170px;
         min-width: 220px;
         padding: 8px 12px;
         background: rgba(20, 24, 20, 0.9);
@@ -150,14 +194,22 @@
         <button type="button" data-speed="4" aria-pressed="false">4x</button>
       </div>
       <div class="field"><span class="label">Cash</span><span id="hud-cash">...</span></div>
-      <div class="field" title="Attention left today. A road costs 1. It refills to 40 each game day.">
+      <div class="field" title="Attention left today. A road costs 1, a stake 3. It refills to 40 each game day.">
         <span class="label">Attention</span><span id="hud-attention">...</span>
       </div>
-      <button type="button" id="tool-road" aria-pressed="false">Road (R)</button>
       <button type="button" id="tool-overlay" aria-pressed="false">Owners (O)</button>
       <span id="hud-message"></span>
       <span id="hud-conn" data-status="connecting">connecting</span>
     </div>
+    <nav id="sidebar" aria-label="Build">
+      <h2>Build</h2>
+      <button type="button" id="tool-road" aria-pressed="false" title="Lay a road on your land or on frontier.">
+        Road (R)<small>1 attention</small>
+      </button>
+      <button type="button" id="tool-stake" aria-pressed="false" title="Stake a frontier tile. You pay a claim fee now and own it when the survey is done.">
+        Stake (C)<small>3 attention, claim fee</small>
+      </button>
+    </nav>
     <aside id="inspector" hidden>
       <h2 id="inspector-title">Tile</h2>
       <dl>
@@ -169,6 +221,8 @@
         <dd id="inspector-richness"></dd>
         <dt>Building</dt>
         <dd id="inspector-building"></dd>
+        <dt>Survey</dt>
+        <dd id="inspector-survey"></dd>
       </dl>
     </aside>
     <div id="legend" hidden>
@@ -177,7 +231,7 @@
       <span><i style="background: #f4f1e8"></i>Town</span>
       <span><i style="background: #3fa7e0"></i>People</span>
     </div>
-    <div id="help">Drag or arrow keys to pan. Wheel or +/- to zoom. Home finds your land, T the town. Click a tile to inspect it. O shows who owns what. R for road, Esc to stop.</div>
+    <div id="help">Drag or arrow keys to pan. Wheel or +/- to zoom. Home finds your land, T the town. Click a tile to inspect it. O shows who owns what. R for road, C to stake frontier land, Esc to stop.</div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

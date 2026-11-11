@@ -63,6 +63,12 @@ export function hashWorld(world: World): string {
     h.u32(build.tile);
     h.int(build.remaining);
   }
+  h.u32(world.surveys.length);
+  for (const survey of world.surveys) {
+    h.u32(survey.tile);
+    h.str(survey.op);
+    h.int(survey.remaining);
+  }
   h.u32(world.parties.length);
   for (const party of world.parties) {
     h.str(party.kind);
