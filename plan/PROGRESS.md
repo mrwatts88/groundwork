@@ -75,3 +75,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-08. pnpm 10.14.0, clone HEAD equals origin/main, and the lean 13.4 `claude -p` call from an empty dir returned structured_output with about 1.1k input plus cache tokens.
 - **Learned:** with `--system-prompt` set, almost all input tokens land as cache_creation, not input_tokens. Count all three fields when checking cost. `npm --prefix ~/.local` puts tools in `~/.local/bin` without sudo.
 - **Next:** R0-09 deploy script and systemd user service.
+
+## 2026-11-11, R0-09 deploy
+
+- **Did:** `scripts/deploy.sh` (Mac: push, then ssh to pull and run `scripts/deploy-remote.sh`, which installs, builds, links the units from `deploy/` into `~/.config/systemd/user`, enables them, restarts and prints health). `groundwork.service` on port 7400 with data in `~/.local/share/groundwork`, an optional env file at `~/.config/groundwork/env` and MemoryMax 1G. `groundwork-backup.service` and `.timer` run `scripts/backup.sh` nightly (sqlite3 `.backup`, keep 14). docs/dev.md has a Deploy section.
+- **Verified:** verifier PASS R0-09. Deploy printed health. The tick rose over 10s from the Mac. A restart resumed at the same tick. The service is enabled and the timer is listed. A backup was written, and retention left 14.
+- **Learned:** with no client the clock is away at one tick per 10 real seconds, so a 10 second health check passes with little margin. Use 12 seconds. Port 7400 was reachable from the Mac with no firewall change. Non-interactive ssh has XDG_RUNTIME_DIR, so `systemctl --user` works over ssh.
+- **Next:** R0-10 live mind smoke on the Fedora box.

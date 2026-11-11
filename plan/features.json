@@ -211,7 +211,9 @@
         "running the backup service once writes a copy to ~/groundwork-backups/ and keeps at most 14",
         "docs/dev.md has a Deploy section"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-09. deploy.sh pushed, pulled, installed, built, restarted and printed health (tick 6). From the Mac, health tick went 6 to 7 and 7 to 8 over 10s. A restart resumed at tick 9 and reached 10 twelve seconds later. is-enabled printed enabled and the backup timer is listed. The backup service wrote a copy to ~/groundwork-backups, and retention left exactly 14 in a seeded temp dir. docs/dev.md has a Deploy section. check-fast is green, 81/81.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-10",

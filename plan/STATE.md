@@ -22,14 +22,17 @@ the Playwright smoke test. A lean headless `claude -p` NPC call was proven on th
 (DESIGN.md 13.4). The Fedora box is prepped (R0-08): pnpm 10.14.0 in `~/.local/bin` and a clone at `~/code/groundwork`. The minds skeleton is in (R0-07): a Mind with a fake
 backend, a `claude -p` backend, schema-checked replies, a budget governor
 (120 calls per hour) and a usage row per call. Nothing schedules it yet.
+The world server runs on the Fedora box (R0-09) as the `groundwork` systemd
+user service at `http://laptop.local:7400`. Deploy with `scripts/deploy.sh`
+from the Mac. Backups go to `~/groundwork-backups/` nightly, keeping 14.
 
-**Next (agent):** R0-09 deploy: scripts/deploy.sh, systemd user service, nightly backup.
+**Next (agent):** R0-10 live mind smoke on the Fedora box: one real claude -p call.
 
 **Waiting on Matt:** nothing. R0-look comes after R0-review. **In progress, blocked:** nothing.
 
 **Notes for the next session:** development is on the Mac
-(`cd ~/code/groundwork && claude`, then `/next`). The world server will run on
-the Fedora box. On the Fedora box, `claude` and `pnpm` live in
+(`cd ~/code/groundwork && claude`, then `/next`). The world server runs on
+the Fedora box. The world lives in `~/.local/share/groundwork` there. On the Fedora box, `claude` and `pnpm` live in
 `~/.local/bin`, which non-interactive ssh does not have on its PATH. Use
 absolute paths. Packages export their `src/index.ts` directly and imports
 inside a package use the `.ts` extension. The server runs its TS directly
