@@ -86,7 +86,7 @@
         "a test in packages/sim fails if any source file under packages/sim/src contains Math.random, Date or performance.now",
         "map generation from the same seed produces the same terrain and different seeds produce different terrain (tests)"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-05",

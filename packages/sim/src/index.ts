@@ -6,3 +6,30 @@ import { PROTOCOL_VERSION, type PackageName } from "@groundwork/protocol";
 export const PACKAGE: PackageName = "sim";
 
 export const SIM_PROTOCOL_VERSION: number = PROTOCOL_VERSION;
+
+export { apply, ROAD_BUILD_TICKS, ROAD_COST } from "./apply.ts";
+export { hashWorld } from "./hash.ts";
+export { CLAIM_SIZE, createWorld, STARTING_CASH, type WorldOptions } from "./mapgen.ts";
+export { run, type RunReport } from "./replay.ts";
+export { createRng, nextInt, nextU32, type Rng } from "./rng.ts";
+export {
+  SCENARIO_OPS,
+  SCENARIO_SEED,
+  SCENARIO_SIZE,
+  SCENARIO_TICKS,
+  scenarioLog,
+  scenarioWorld,
+} from "./scenario.ts";
+export { tick } from "./tick.ts";
+export {
+  inBounds,
+  NO_OWNER,
+  opIndex,
+  ROAD_BUILDING,
+  ROAD_BUILT,
+  ROAD_NONE,
+  tileIndex,
+  type Build,
+  type Op,
+  type World,
+} from "./world.ts";
