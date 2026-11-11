@@ -235,7 +235,9 @@
         "the smoke run records a usage row in the server's SQLite with tokens under 3000 and ok true",
         "the smoke script is not part of pnpm test or make check"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-10. Real smoke on the Fedora box: status ok, schema-valid place_road reply as Ada Fenwick. mind_usage row 2: haiku, 1607 tokens, ok 1. Smoke script excluded from vitest include, test:slow and Makefile. sqlite.test.ts calls no model. Governor on.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-11",

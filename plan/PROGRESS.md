@@ -82,3 +82,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-09. Deploy printed health. The tick rose over 10s from the Mac. A restart resumed at the same tick. The service is enabled and the timer is listed. A backup was written, and retention left 14.
 - **Learned:** with no client the clock is away at one tick per 10 real seconds, so a 10 second health check passes with little margin. Use 12 seconds. Port 7400 was reachable from the Mac with no firewall change. Non-interactive ssh has XDG_RUNTIME_DIR, so `systemctl --user` works over ssh.
 - **Next:** R0-10 live mind smoke on the Fedora box.
+
+## 2026-11-11, R0-10 live mind smoke
+
+- **Did:** `SqliteUsageRecorder` in `packages/minds/src/sqlite.ts` writes a `mind_usage` table into the world's groundwork.db. `packages/minds/scripts/smoke.ts` (`pnpm --filter @groundwork/minds smoke`) makes one real `claude -p` call as Ada Fenwick through Mind, the governor and that recorder.
+- **Verified:** verifier PASS R0-10. Schema-valid place_road reply, usage row with 1607 tokens on haiku and ok 1, and the script stays out of every check.
+- **Learned:** a lean deliberation call costs about 1.6k tokens and 6 seconds on haiku. `/usr/bin/node` is on the non-interactive ssh PATH, so only pnpm and claude need absolute paths. The recorder sets busy_timeout so it can share the db with the running server.
+- **Next:** R0-11 ring 0 end-to-end check.
