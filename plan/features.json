@@ -326,7 +326,9 @@
         "Ring 1 ends with tests/rings/ring1.sh, R1-review, R1-playtest and R2-plan",
         "scripts/agent/plan.py lint passes with plan/.planning removed"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R1-plan. 23 new items (R1-01 to R1-20, R1-review, R1-playtest, R2-plan), each with real design refs, owner, effort and runnable checks. Ring 1 ends with ring1.sh (R1-20), R1-review (depends on R1-01 to R1-20), R1-playtest and R2-plan. plan.py lint ok with .planning removed, no dependency cycles, no existing item changed except R1-plan status. Every 23.2 done-when line maps to an item. D-012 is consistent with section 1. No em dashes or semicolons in the diff.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R1-01",

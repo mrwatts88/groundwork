@@ -104,3 +104,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Learned:** the item's acceptance asks for the ring-N tag, but the ring-review skill tags only after PASS. Under autopilot the builder tagged locally before READY and pushed after PASS.
 - **Process:** proposal for Matt: in the ring-review skill, tag before the verifier runs and push the tag only on PASS (delete it on FAIL). Also, shellcheck is missing on the Mac, so `make check-fast` only syntax-checks scripts there. Installing it (`brew install shellcheck`) would close that gap.
 - **Next:** R1-plan. R0-look waits on Matt and does not gate it.
+
+## 2026-11-11, R1-plan Ring 1 planning
+
+- **Did:** broke Ring 1 into R1-01 to R1-20, then R1-review, R1-playtest (Matt, does not gate) and R2-plan. The order is breadth first: world shape, people, client view, attention, staking, depot, harvester, market and trucks with a cash ledger, client vehicles, town growth, rival reflex, rival leader Mind, land offers, offers inbox, conversation Mind, chat panel, live smoke per agent type, deploy, docs, ring1.sh. DESIGN.md 23.2 now has a Ring 1 done-when list. D-012 sets the ore loop (harvester to depot, truck to market, roads on frontier, owners as parties, reflex actors through apply() and not logged, Minds act only as themselves, fresh world on the box).
+- **Verified:** verifier PASS R1-plan on the second run. The first run failed because R1-playtest had no effort. That run also flagged a missing check on the rival reflex's information limits, so R1-11 and R1-review now cover invariant 2.
+- **Learned:** plan-ring wants effort on every item, human ones too. Ring 0's human items lack it, so do not copy them. Plan order is build order, because `plan.py next` sorts only by in_progress.
+- **Next:** R1-01. Matt: R0-look (does not block).
