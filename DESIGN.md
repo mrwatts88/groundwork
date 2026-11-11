@@ -456,7 +456,7 @@ Only the current ring is broken into items (rolling wave, PROCESS.md).
 
 ### 23.2 Rings
 
-#### Ring 0: foundation [now]
+#### Ring 0: foundation [done, tagged ring-0]
 
 Repo, workspace, checks, the skeleton of every package, the deploy pipeline
 and a proven `claude -p` call from the server.
@@ -479,6 +479,27 @@ roads, build a harvester and a depot, haul ore and sell it to a town that
 grows when it gets materials. One rival Op does the same, led by a Mind. You
 can chat with a few named people, including landowners, and close a land
 deal in chat. Present and away clocks run. Persistent on the Fedora box.
+The shape of the ore loop is decision D-012.
+
+Done when:
+- From a fresh world, a player can stake a deposit, lay roads to it and to
+  the town, build a depot, run a harvester and a truck, and sell ore to the
+  town for cash, in a scenario test and in the browser.
+- The town market price moves with stock and demand, and the town grows
+  (population, demand and houses) when it gets ore.
+- Every Op has 40 attention points per game day under one cost table, and the
+  HUD shows what is left.
+- The rival Op runs the same loop through the same command API under the same
+  costs and attention, steered by a leader Mind that deliberates on the
+  server. Its commands replay from the log without calling a Mind.
+- The player can chat with the town's six named people and close a land deal
+  from an offer card in chat. Landowners also answer plain offers by reflex.
+- Every cash change is in a per-Op ledger, and a 30 game day headless run
+  keeps cash and stock non-negative.
+- The world runs on the Fedora box under the present and away clocks,
+  persists across restarts, and the rival's Mind runs there on `claude -p`
+  with the governor on.
+- `tests/rings/ring1.sh` passes.
 
 #### Ring 2: away and fair [next]
 
@@ -528,3 +549,4 @@ Accounts, a second human Op, the API backend, possibly a cloud host.
 | D-008 | 2026-11-11 | First playable: one town, one rival, one resource, chat with a few NPCs | Matt's choice |
 | D-010 | 2026-11-11 | The server stores SQLite through Node's built-in `node:sqlite` and serves WebSockets with `ws`. Client messages are checked by hand-written parsers in protocol for now | No native module to build on the Fedora box. `ws` is small and standard. Zod can replace the parsers when the command set grows |
 | D-011 | 2026-11-11 | No privacy rules for this repo. Matt's name and email are fine anywhere, and public actions on it are routine. The only rule left is section 18: credentials never enter the repo | Matt: "there's no secrecy going on here." The old rules came from another project |
+| D-012 | 2026-11-11 | Ring 1 ore loop. A harvester carries ore from a deposit the Op owns to its depot. A truck carries it from the depot to the town market and sells on arrival. Roads can be laid on your own land and on frontier, and in Ring 1 every road is open to every vehicle. A tile's owner is a party: frontier, an Op, the town or a named person. Reflex actors (the rival, landowners, the town) act through `apply()` inside the tick and are not logged, because replay recreates them. Mind output is logged as commands, and a Mind may only issue commands as its own entity. The town grows on ore, standing in for building materials until Ring 3. Labor is a hiring cost in the build price plus a daily wage. The Ring 0 world on the Fedora box is replaced by a fresh one and its db file is kept | Thinnest loop that keeps transport physical (5.2) and every actor on the one command API (invariant 1). Access rules for roads wait for Ring 3. The Ring 0 world has no economy worth keeping |

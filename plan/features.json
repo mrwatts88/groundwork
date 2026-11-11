@@ -326,6 +326,575 @@
         "Ring 1 ends with tests/rings/ring1.sh, R1-review, R1-playtest and R2-plan",
         "scripts/agent/plan.py lint passes with plan/.planning removed"
       ],
+      "status": "in_progress"
+    },
+    {
+      "id": "R1-01",
+      "ring": 1,
+      "title": "World shape for Ring 1: parcel owners as parties, one town, a rival Op, a world format version",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "4.2",
+        "4.3",
+        "6.1",
+        "8",
+        "11.2",
+        "12.3",
+        "24"
+      ],
+      "depends_on": [],
+      "acceptance": [
+        "a Vitest test in packages/sim shows createWorld places exactly one town: a connected block of town-owned dry tiles within 6 tiles of water, with built town roads and one market tile, and no starting claim overlaps it",
+        "a test shows the world has two Ops, player and rival, each with a 6x6 starting claim of dry land and the same starting cash",
+        "a test shows every tile owner resolves through one lookup in packages/sim to a party: frontier, an Op, the town or a named person (the person kind may have no members until R1-02)",
+        "a test shows toSnapshot and fromSnapshot round-trip the town and the party data, and the 10000-tick determinism test passes and pnpm test:slow prints the same hash in two processes",
+        "a server test starts the server on a data dir written by the Ring 0 world format: the old db file is kept under a new name in the same dir and a new Ring 1 world is created. The store records the world format version",
+        "GET /health includes the town name and the list of Op ids (server test)",
+        "make check-fast is green"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-02",
+      "ring": 1,
+      "title": "Named people: six per town with homes, jobs, personalities and land, three of them landowners",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "7.1",
+        "4.3",
+        "5.3"
+      ],
+      "depends_on": [
+        "R1-01"
+      ],
+      "acceptance": [
+        "a sim test shows createWorld gives the town 6 named people, each with a name, a job, a home tile on town land, a personality drawn from a fixed trait list and an asking-price factor, and every one of them is an owner party",
+        "a test shows the same seed gives the same people and two different seeds give different names",
+        "a test shows at least 3 people own parcels outside the town core, at least 24 tiles in total, and at least one person's land lies within 10 tiles of a deposit",
+        "a test shows people travel in the snapshot and the welcome state, and changing one person's parcel changes the state hash",
+        "the determinism tests and pnpm test:slow still match across two processes"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-03",
+      "ring": 1,
+      "title": "Client: the town, the rival's and people's land, an ownership overlay and an inspector panel",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "15",
+        "4.3",
+        "7.1"
+      ],
+      "depends_on": [
+        "R1-02"
+      ],
+      "acceptance": [
+        "the Playwright smoke saves a screenshot centred on the town (key T centres on it) that shows town houses and the market drawn in code, each with its own silhouette and colour, and the town roads (verifier opens the image)",
+        "pressing O toggles an ownership overlay that colours your land, the rival's land, town land and people's land differently: the smoke saves one screenshot with it on and one off and the verifier opens both",
+        "clicking a tile fills #inspector with its terrain, the owner's name (You, the rival's name, the town's name or the person's name) and deposit richness, read from the DOM by the Playwright test on a town tile, a person's tile and a deposit",
+        "README How to play mentions T, O and the inspector",
+        "make check passes"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-04",
+      "ring": 1,
+      "title": "Attention: 40 points per Op per game day, one cost table, shown in the HUD",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "6.2",
+        "1",
+        "21"
+      ],
+      "depends_on": [
+        "R1-01"
+      ],
+      "acceptance": [
+        "a sim test shows every Op, the rival included, starts each game day with 40 attention points and unused points do not carry over a day boundary",
+        "the attention cost of every command type lives in one table in packages/sim, and a test fails if a Command type has no entry",
+        "a test shows a command the Op cannot afford in attention is rejected with insufficient_attention and leaves the state hash unchanged",
+        "a test shows one day's budget lets an Op lay at least 30 road tiles and still afford one building placement (the building cost may be a placeholder entry until R1-06)",
+        "the HUD shows attention left as N/40 in #hud-attention, and the Playwright smoke reads it before and after placing a road",
+        "the chosen costs are recorded as a decision in DESIGN.md section 24 (open question 21)"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-05",
+      "ring": 1,
+      "title": "Stake frontier land, roads on frontier, and a build sidebar",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "5.3",
+        "5.2",
+        "6.2",
+        "15"
+      ],
+      "depends_on": [
+        "R1-03",
+        "R1-04"
+      ],
+      "acceptance": [
+        "a sim test shows stake_claim on a frontier tile charges a claim fee (higher on deposits) and its attention cost, marks the tile as being surveyed, and makes the Op its owner when the survey time has passed",
+        "a test shows stake_claim is rejected with a typed error on water, on owned land, on a tile someone else is surveying, off the map and without the cash, each leaving the state hash unchanged",
+        "a test shows place_road is accepted on frontier tiles as well as the Op's own land, and rejected with not_owner on land another party owns",
+        "#sidebar has Road and Stake tools. The Playwright smoke stakes a frontier tile, sees it drawn as being surveyed, and on a fast-clock test server sees #inspector name You as owner once the survey is done",
+        "README How to play says how to stake land and that roads can cross the frontier",
+        "make check passes"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-06",
+      "ring": 1,
+      "title": "Depot: the first building, with construction time and staffing",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "6.3",
+        "5.5",
+        "6.2",
+        "15"
+      ],
+      "depends_on": [
+        "R1-05"
+      ],
+      "acceptance": [
+        "a sim test shows place_building with kind depot, on a dry tile the Op owns next to a road, charges its cash cost (a hiring cost included) and attention, stays under construction for its build time, then becomes active",
+        "a test shows place_building is rejected with typed errors when the tile is not the Op's, has no adjacent road, is water, is already built on, or the Op lacks cash or attention, each leaving the hash unchanged",
+        "a test shows an active depot pays its daily wage once per game day, an Op that cannot pay has the depot unstaffed and idle, it is staffed again once the Op can pay, and no Op's cash ever goes below 0",
+        "buildings are in the snapshot, the hash and the tick delta (tests), and the determinism tests and pnpm test:slow still match",
+        "#sidebar has a Depot tool. The Playwright smoke places a depot next to a road and saves screenshots of it under construction and built, with its own silhouette (verifier opens them), and #inspector shows its state",
+        "README How to play says how to build a depot and what it costs to run"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-07",
+      "ring": 1,
+      "title": "Vehicles and the harvester route: deposit to depot on roads",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "3",
+        "5.1",
+        "6.2",
+        "17"
+      ],
+      "depends_on": [
+        "R1-06"
+      ],
+      "acceptance": [
+        "a sim test shows buy_vehicle with kind harvester at an active depot the Op owns charges its cost and attention and puts the harvester on the depot tile",
+        "a test shows set_route sends a harvester between a deposit tile the Op owns and its depot: it moves along road tiles by a deterministic shortest path (it may step onto its own deposit and depot tiles), mines ore at the deposit, lowering its richness, then returns and unloads into the depot's ore stock",
+        "set_route is rejected with no_path when no road path exists, and with typed errors for a deposit the Op does not own or a vehicle that is not its own (tests)",
+        "a scenario test in packages/sim: a harvester on a deposit 20 road tiles from its depot delivers ore to the depot within 2 game days (DESIGN.md 17)",
+        "a test shows a deposit mined down to 0 richness stops yielding and its harvester waits at the depot",
+        "vehicles, their cargo and depot stock are in the snapshot, hash and delta, and the determinism tests and pnpm test:slow still match"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-08",
+      "ring": 1,
+      "title": "The town market, trucks and the cash ledger",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "5.2",
+        "4.3",
+        "6.2",
+        "17"
+      ],
+      "depends_on": [
+        "R1-07"
+      ],
+      "acceptance": [
+        "a sim test shows the town market holds an ore stock, a daily demand and a price, and every game hour the price rises when stock is short of demand and falls when it is long, between a floor and a ceiling, in integer math",
+        "a test shows buy_vehicle with kind truck and set_route from a depot to the town market: the truck loads ore at the depot, drives the roads to the market tile, and sells on arrival at the current price, with cash to the Op, ore into the market stock and no attention spent",
+        "every cash change is one entry kind in a per-Op ledger (sales, claim fees, build costs, vehicle costs, wages, land deals). A test shows each Op's cash equals its starting cash plus its ledger total",
+        "a scenario test from a fresh world with scripted player commands (stake a deposit, roads to it and to the town, depot, harvester, truck) shows the player's cash from ore sales rising within 3 game days",
+        "the market and the ledger are in the snapshot and hash, and the determinism tests and pnpm test:slow still match"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-09",
+      "ring": 1,
+      "title": "Client: buy and route vehicles, smooth movement, depot and market in the inspector",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "15",
+        "3",
+        "5.2"
+      ],
+      "depends_on": [
+        "R1-08"
+      ],
+      "acceptance": [
+        "the depot inspector has Buy harvester and Buy truck. The Playwright smoke buys a harvester, selects it, clicks an owned deposit to set its route, and the route shows in the server state",
+        "the smoke routes a truck from the depot to the market the same way",
+        "harvesters and trucks are drawn with distinct shapes and move smoothly between ticks: the smoke takes two screenshots inside one tick and the vehicle is at different positions (pixel diff)",
+        "#inspector shows a vehicle's kind, cargo and route, a depot's ore stock, and the market's stock, demand and price, read from the DOM by the smoke",
+        "the top bar shows cash changes from sales as they happen (the smoke reads #hud-cash rise after a sale on a fast-clock test server)",
+        "README How to play covers harvesters, trucks and selling ore"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-10",
+      "ring": 1,
+      "title": "Town growth: the town uses ore to grow, and houses appear",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "4.3",
+        "5.2",
+        "7.1",
+        "1"
+      ],
+      "depends_on": [
+        "R1-08",
+        "R1-03"
+      ],
+      "acceptance": [
+        "a sim test shows each game day the town uses ore from its market stock to grow: with enough ore its population and its daily ore demand rise, and with no ore it does not grow",
+        "a test shows growth adds houses on free town land, and when the town's land is full it takes adjacent frontier tiles",
+        "town growth changes the world only through apply() with the town as the actor (verifier reads the code, and a test shows a house placement comes back as an ok command result)",
+        "the market inspector shows population, and the Playwright smoke on a test server where ore was delivered shows more houses than at the start (screenshot pair, verifier opens both)",
+        "the determinism tests and pnpm test:slow still match",
+        "README How to play says the town grows when it gets ore"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-11",
+      "ring": 1,
+      "title": "Rival reflex AI: the rival runs the same ore loop through apply()",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "8",
+        "13.1",
+        "6.2",
+        "1",
+        "14",
+        "17"
+      ],
+      "depends_on": [
+        "R1-08"
+      ],
+      "acceptance": [
+        "the rival's reflex AI lives in packages/sim, runs every tick and acts only by calling apply() with the rival's Op id under the same costs and attention as the player (verifier reads the code)",
+        "a headless scenario test from a fresh world with no player commands: within 5 game days the rival has staked a deposit, built a depot, run a harvester and a truck, and sold ore to the town",
+        "the reflex follows a strategy (which deposit to go for, a sell price floor, whether to expand) that a set_strategy command can change, and a test shows a changed strategy changes the rival's next choice",
+        "a 30 game day headless run with the rival reflex holds the invariants: no negative stock or cash, every Op's cash matches its ledger, no Op ever has more than 40 attention points in a day (test)",
+        "the 10000-tick determinism test includes the rival, and pnpm test:slow prints the same hash in two processes"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-12",
+      "ring": 1,
+      "title": "Rival leader Mind: scheduled deliberation on the server, replies as logged commands",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "8",
+        "13.1",
+        "13.2",
+        "13.4",
+        "13.5",
+        "16",
+        "1"
+      ],
+      "depends_on": [
+        "R1-11"
+      ],
+      "acceptance": [
+        "the rival leader is a named person whose name and personality come from world settings in the server config, and the server schedules their deliberation twice per game day, on events (an offer refused, a wanted deposit taken by someone else) and once soon after the server starts",
+        "a server test with a fake backend that takes 5 seconds shows ticks keep arriving while the call is out",
+        "a test shows the prompt holds only what the rival could see: its own Op, the map, the public market and parcels. The player's cash value does not appear in it",
+        "a server test with the fake backend shows the reply's commands go through apply() as the rival, are stamped and written to the command log, and invalid ones or ones naming another actor are dropped and logged. Restarting the server replays the log to the same hash without calling any Mind",
+        "the Mind reply schema covers every Command type, and a contract test round-trips each one and rejects a malformed reply. The fake backend has a rule for the rival leader",
+        "backend, binary path and models come from config. Tests run with the fake backend and with claude off the PATH. The governor is on and every call writes a mind_usage row",
+        "GET /debug/minds returns the usage rows per agent (server test)"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-13",
+      "ring": 1,
+      "title": "Land offers: make, accept, reject and expire, with landowners deciding by reflex",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "5.3",
+        "5.4",
+        "6.2",
+        "1"
+      ],
+      "depends_on": [
+        "R1-02",
+        "R1-04"
+      ],
+      "acceptance": [
+        "a sim test shows make_offer from one party to another (parcels for cash, with an expiry) and accept_offer by the receiver moves the land and the cash in one step, after checking both sides still hold them",
+        "tests show reject_offer and expiry close an offer with nothing moved, and that an offer giving land the offerer does not own, or cash it does not hold at accept time, is rejected with a typed error and leaves the hash unchanged",
+        "a test shows a named landowner decides on an offer by reflex through apply() within one game hour: accept when the price meets their asking price (land value times their price factor), reject when below",
+        "offers are in the snapshot, hash and delta, and the determinism tests and pnpm test:slow still match"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-14",
+      "ring": 1,
+      "title": "Client: the people list, an offer form and the offers inbox",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "15",
+        "5.3",
+        "5.4",
+        "7.1"
+      ],
+      "depends_on": [
+        "R1-13",
+        "R1-03"
+      ],
+      "acceptance": [
+        "#people lists the town's 6 named people with job and parcel count, and clicking one centres the map on their home (Playwright)",
+        "clicking a person's parcel shows Make offer in #inspector. The form takes a cash amount and sends make_offer for that parcel (Playwright reads the offer from server state)",
+        "#offers lists open offers to and from you with Accept and Reject. The smoke offers above the asking price on a fast-clock test server, sees it accepted within a game hour, and #inspector then names You as the owner",
+        "README How to play says how to buy land with an offer"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-15",
+      "ring": 1,
+      "title": "Conversation Mind: talk to named people, who can put land offers on the table",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "13.1",
+        "13.3",
+        "7.1",
+        "7.3",
+        "13.5",
+        "1"
+      ],
+      "depends_on": [
+        "R1-12",
+        "R1-13"
+      ],
+      "acceptance": [
+        "a server test with the fake backend shows a chat message to a named person gets an in-character reply from their Conversation Mind, through the governor at conversation tier",
+        "the reply schema has the spoken line plus commands. A test shows a make_offer in the reply from that person to the player goes through apply() as that person, is logged and becomes an open offer, and a command naming any other actor is dropped and logged",
+        "a test shows the prompt holds the person's profile, the parcels they own, their asking prices and the last 10 lines of their conversation with the player, and not the player's cash",
+        "a test shows each line of conversation is stored in SQLite and is still there after a server restart",
+        "a test shows that when the governor refuses, the person answers with a fixed reflex line and no backend call",
+        "the fake backend has a rule for a landowner conversation, and no test calls a real model (tests run with claude off the PATH)"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-16",
+      "ring": 1,
+      "title": "Client: the chat panel with offer cards",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "13.3",
+        "15"
+      ],
+      "depends_on": [
+        "R1-14",
+        "R1-15"
+      ],
+      "acceptance": [
+        "a person's inspector and their #people row have Talk, which opens #chat. The Playwright smoke, on a test server with the fake Mind backend, sends a line and sees the reply, with a waiting indicator shown until it arrives",
+        "an offer the person puts on the table shows as a card in #chat with Accept and Counter. The smoke accepts one and the parcel's owner becomes You in server state and in #inspector",
+        "Counter opens the offer form for that person's parcels, prefilled with their price",
+        "after a page reload, reopening the chat shows the earlier conversation (Playwright)",
+        "README How to play says how to talk to people and close a land deal in chat"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-17",
+      "ring": 1,
+      "title": "Live mind smoke per agent type on the Fedora box: rival leader and landowner",
+      "owner": "agent",
+      "effort": "low",
+      "design": [
+        "13.4",
+        "17"
+      ],
+      "depends_on": [
+        "R1-12",
+        "R1-15"
+      ],
+      "acceptance": [
+        "ssh -o BatchMode=yes laptop 'cd ~/code/groundwork && ~/.local/bin/pnpm --filter @groundwork/server smoke:minds' makes one real claude -p call as the rival leader and one as a landowner in conversation, through the real prompt builders, and prints both schema-valid replies (this item may call a real model)",
+        "each call writes a mind_usage row with ok 1, and each used under 4000 input plus cache tokens",
+        "the smoke script is not part of pnpm test, pnpm test:slow or make check"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-18",
+      "ring": 1,
+      "title": "Deploy Ring 1 to the Fedora box with the rival's Mind live",
+      "owner": "agent",
+      "effort": "medium",
+      "design": [
+        "18",
+        "11.2",
+        "13.4",
+        "13.5"
+      ],
+      "depends_on": [
+        "R1-09",
+        "R1-10",
+        "R1-11",
+        "R1-16",
+        "R1-17"
+      ],
+      "acceptance": [
+        "scripts/deploy.sh prints health with the town name and both Op ids, and ssh laptop 'ls ~/.local/share/groundwork' shows the Ring 0 db kept under its new name",
+        "the service on the Fedora box uses the claude -p backend with the governor on (its config, read over ssh), and within 15 real minutes of the deploy the mind_usage table there has a rival leader row with ok 1 (this item may call a real model)",
+        "curl -s http://laptop.local:7400/debug/minds from the Mac lists the rival leader's calls",
+        "after ssh laptop 'systemctl --user restart groundwork' the tick resumes at or above its value before the restart"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-19",
+      "ring": 1,
+      "title": "Docs: how to add a building, a good, a command and an agent type, and a full How to play",
+      "owner": "agent",
+      "effort": "low",
+      "design": [
+        "19"
+      ],
+      "depends_on": [
+        "R1-10",
+        "R1-12",
+        "R1-16"
+      ],
+      "acceptance": [
+        "docs/dev.md has sections on adding a building, a good, a command and an agent type, each naming the files to change and the tests to add",
+        "README How to play walks the Ring 1 loop end to end: stake, roads, depot, harvester, truck, selling, the town growing, the rival, talking to people and buying land",
+        "the docs copy has no em dashes and no semicolons (grep finds none in README.md and docs/dev.md)"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-20",
+      "ring": 1,
+      "title": "tests/rings/ring1.sh: the end-to-end check the Ring 1 review runs",
+      "owner": "agent",
+      "effort": "low",
+      "design": [
+        "23.2",
+        "17"
+      ],
+      "depends_on": [
+        "R1-18",
+        "R1-19"
+      ],
+      "acceptance": [
+        "tests/rings/ring1.sh runs make check, the cross-process determinism check, the Ring 1 scenario tests, a health check against laptop.local:7400 that finds the town, both Ops and a clock mode, the live mind smoke for every agent type, and /debug/minds showing rival leader rows, and exits 0",
+        "shellcheck -S warning on tests/rings/ring1.sh is clean (run on the Fedora box)",
+        "docs/dev.md lists ring1.sh next to ring0.sh"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-review",
+      "ring": 1,
+      "title": "Ring 1 review",
+      "owner": "agent",
+      "effort": "high",
+      "design": [
+        "1",
+        "23.2"
+      ],
+      "depends_on": [
+        "R1-01",
+        "R1-02",
+        "R1-03",
+        "R1-04",
+        "R1-05",
+        "R1-06",
+        "R1-07",
+        "R1-08",
+        "R1-09",
+        "R1-10",
+        "R1-11",
+        "R1-12",
+        "R1-13",
+        "R1-14",
+        "R1-15",
+        "R1-16",
+        "R1-17",
+        "R1-18",
+        "R1-19",
+        "R1-20"
+      ],
+      "acceptance": [
+        "every Ring 1 done-when line in DESIGN.md 23.2 is checked and holds",
+        "every invariant in DESIGN.md section 1 that Ring 1 touches holds: one command API for every actor, the rival and people included, the same rules and attention for every Op, no Math.random or Date in packages/sim, Mind output enters the world only as logged commands, no real model in automated tests",
+        "tests/rings/ring1.sh exits 0",
+        "the commit is tagged ring-1"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R1-playtest",
+      "ring": 1,
+      "title": "Matt plays Ring 1",
+      "owner": "human",
+      "gates_ring": false,
+      "instructions": "Open http://laptop.local:7400 on the Mac (http://laptop-ts:7400 away from home). Stake a deposit, lay roads to it and to the town, build a depot, buy a harvester and a truck, and sell some ore. Talk to one of the town's people and try to buy a parcel in chat. Watch what the rival does. Then tell the next session what was fun, what was dull and what was confusing, and it goes into plan/PLAYTEST.md.",
+      "design": [
+        "3",
+        "23.2"
+      ],
+      "depends_on": [
+        "R1-review"
+      ],
+      "acceptance": [
+        "Matt's notes are in plan/PLAYTEST.md"
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "R2-plan",
+      "ring": 2,
+      "title": "Plan Ring 2: away and fair (foreman, standing orders, briefing, governor hardening, attention tuning, soak test)",
+      "owner": "agent",
+      "effort": "high",
+      "design": [
+        "23.2"
+      ],
+      "depends_on": [
+        "R1-review"
+      ],
+      "acceptance": [
+        "Ring 2 items exist in plan/features.json, each with design refs, owner, effort and runnable acceptance checks",
+        "Ring 2 ends with tests/rings/ring2.sh, R2-review, R2-playtest and R3-plan",
+        "scripts/agent/plan.py lint passes with plan/.planning removed"
+      ],
       "status": "todo"
     }
   ]
