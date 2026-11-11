@@ -185,7 +185,7 @@
         "ssh laptop 'git -C ~/code/groundwork rev-parse HEAD' equals the Mac's origin/main",
         "the lean claude -p call from DESIGN.md 13.4, run over ssh from an empty dir, returns JSON with structured_output and under 3000 input plus cache tokens"
       ],
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "id": "R0-09",
