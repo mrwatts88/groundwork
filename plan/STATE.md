@@ -26,7 +26,6 @@ user service at `http://laptop.local:7400`. Deploy with `scripts/deploy.sh`
 from the Mac. Backups go to `~/groundwork-backups/` nightly, keeping 14.
 
 **Next (agent):** R0-10 live mind smoke on the Fedora box: one real claude -p call.
-
 **Waiting on Matt:** nothing. R0-look comes after R0-review. **In progress, blocked:** nothing.
 **Notes for the next session:** development is on the Mac
 (`cd ~/code/groundwork && claude`, then `/next`). The world server runs on
