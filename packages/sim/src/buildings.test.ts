@@ -93,6 +93,9 @@ describe("place_building depot", () => {
     expectRejected(world, { type: "place_building", op: "player", kind: "depot", ...s.road }, "occupied");
     expect(apply(world, { type: "place_building", op: "player", kind: "depot", ...s.site }).ok).toBe(true);
     expectRejected(world, { type: "place_building", op: "player", kind: "depot", ...s.site }, "occupied");
+    // And a road cannot go on a depot's tile afterwards, by the owner or anyone.
+    expectRejected(world, { type: "place_road", op: "player", ...s.site }, "occupied");
+    expectRejected(world, { type: "place_road", op: "rival", ...s.site }, "not_owner");
     // Off the map and an unknown Op.
     expectRejected(world, { type: "place_building", op: "player", kind: "depot", x: -1, y: 0 }, "out_of_bounds");
     expectRejected(world, { type: "place_building", op: "nobody", kind: "depot", ...s.site }, "unknown_op");

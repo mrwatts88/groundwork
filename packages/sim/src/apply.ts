@@ -66,6 +66,7 @@ function placeRoad(world: World, cmd: PlaceRoad): CommandResult {
     return reject("not_owner", `(${cmd.x}, ${cmd.y}) belongs to someone else`);
   }
   if (world.road[i] !== ROAD_NONE) return reject("already_road", `(${cmd.x}, ${cmd.y}) already has a road`);
+  if (buildingAt(world, i) !== undefined) return reject("occupied", `(${cmd.x}, ${cmd.y}) has a building on it`);
   const cost = ROAD_COST[terrain]!;
   const op = world.ops[k]!;
   if (op.cash < cost) return reject("insufficient_cash", `${cmd.op} has ${op.cash}, the road costs ${cost}`);

@@ -325,4 +325,4 @@ down from `SURVEY_TICKS` (360, 6 game hours) and gives the tile to the Op at
 `being_surveyed` (any Op is already surveying it), `out_of_bounds` or
 `insufficient_cash`. Surveys travel in the snapshot and in every tick delta.
 `place_road` takes frontier tiles as well as the Op's own and refuses other
-owners' land with `not_owner`.
+owners' land with `not_owner`, and a tile with a building with `occupied`.

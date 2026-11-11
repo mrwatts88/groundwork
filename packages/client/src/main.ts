@@ -96,7 +96,9 @@ async function main(): Promise<void> {
     const i = world.index(t.x, t.y);
     if (world.terrain[i] === TERRAIN.water) return false;
     const owner = world.owner[i]!;
-    if (mode === "road") return (owner === 0 || owner === world.playerOwner()) && world.road[i] === ROAD_NONE;
+    if (mode === "road") {
+      return (owner === 0 || owner === world.playerOwner()) && world.road[i] === ROAD_NONE && world.buildingAt(i) === undefined;
+    }
     if (mode === "stake") return owner === 0 && world.surveyAt(i) === undefined;
     if (mode === "depot") {
       const w = world;
