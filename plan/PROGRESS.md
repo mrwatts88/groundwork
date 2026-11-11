@@ -33,3 +33,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Verified:** verifier PASS R0-03. typecheck and 6 tests across 5 packages pass. A type error in sim makes `make check-fast` exit 2.
 - **Learned:** `pnpm add` now pulls TypeScript 7 and Vitest 5. `@types/node` defaults to 26, so it is pinned to 22 to match the runtime. Packages export TS source with no build step. That is fine for Vite and Vitest, but the server will need a build or a TS loader before it runs under plain Node on the Fedora box (R0 deploy item). No push yet, because R0-02 (the remote) is waiting on Matt.
 - **Next:** R0-04 sim core. Matt: R0-02.
+
+## 2026-11-11, R0-04 sim core
+
+- **Did:** seeded Mulberry32 RNG with its state in the world, integer value-noise mapgen (six terrain kinds, deposits richer farther out, a 6x6 starting claim per Op), tick (1 game minute, finishes road builds), `apply(world, command)` with `place_road` and typed errors, FNV state hash, `run(world, log, ticks)`, and a scripted scenario. Protocol has the Command, CommandResult and Terrain types. `pnpm test:slow` runs `scripts/check-determinism.sh`, which compares two node processes.
+- **Verified:** verifier PASS R0-04. 10000 ticks give the same hash twice, and two processes print hash=659408debd1ae3d5. Invalid roads leave the hash unchanged. The purity scan catches a planted Date. check-fast is green with 25 tests.
+- **Learned:** Node 22 runs the sim TS directly with `--experimental-strip-types`, so use const objects, not enums. The scenario log is redundant (each tile is tried twice), so dropping one entry does not change the hash. Tests that need a changed outcome must remove every command for a tile. Push pending R0-02.
+- **Next:** R0-07 minds skeleton. Matt: R0-02.

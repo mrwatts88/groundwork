@@ -86,7 +86,9 @@
         "a test in packages/sim fails if any source file under packages/sim/src contains Math.random, Date or performance.now",
         "map generation from the same seed produces the same terrain and different seeds produce different terrain (tests)"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-04. vitest 10000-tick 128x128 determinism test passes (same hash twice, changed log differs, split run matches). pnpm test:slow: two node processes print hash=659408debd1ae3d5, determinism ok. apply.test.ts: out_of_bounds, on_water, not_owner and others are typed errors with the hash unchanged. purity.test.ts passes and catches a planted Date. Mapgen: same seed gives identical terrain and 5 seeds give 5 distinct terrains. check-fast green, 25 tests.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-05",

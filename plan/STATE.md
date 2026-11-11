@@ -8,13 +8,15 @@ Rewritten at the end of every session. Under 40 lines.
 skills, hooks, plan) are in place. The repo is local on the Mac. A pnpm
 workspace with five packages (protocol, sim, minds, server, client), strict
 TypeScript and Vitest is in place. `make check-fast` typechecks every package
-and runs the unit tests. No game code yet. A lean headless `claude -p` NPC
-call was proven on the Fedora box (DESIGN.md 13.4).
+and runs the unit tests. The sim core is in (R0-04): a seeded 128x128
+map, a seeded RNG, a tick, `apply(world, command)` with `place_road`, and a state
+hash. `make slow` checks that two processes reach the same hash. Nothing is
+visible yet. A lean headless `claude -p` NPC call was proven on the Fedora box
+(DESIGN.md 13.4).
 
 **In progress:** nothing.
 
-**Next (agent):** R0-04 sim core, R0-07 minds skeleton. `/autopilot` runs
-them back to back.
+**Next (agent):** R0-07 minds skeleton, then whatever `plan.py next` lists.
 
 **Waiting on Matt:** R0-02 publish the public repo. Until it lands there is no
 `origin` remote and nothing has been pushed. Commits from R0-03 on are local.
@@ -27,4 +29,5 @@ the Fedora box. On the Fedora box, `claude` and later `pnpm` live in
 `~/.local/bin`, which non-interactive ssh does not have on its PATH. Use
 absolute paths. Packages export their `src/index.ts` directly and imports
 inside a package use the `.ts` extension. The toolchain is TypeScript 7 and
-Vitest 5.
+Vitest 5. Sim test files typecheck under `packages/sim/tsconfig.test.json`,
+which has node types. The src tsconfig has none, which keeps node out of the sim.
