@@ -4,10 +4,9 @@ Rewritten at the end of every session. Under 40 lines.
 **Ring:** 1, first playable. Planned: R1-01 to R1-20, then R1-review.
 **What Matt can play now:** open `http://laptop.local:7400`
 (`http://laptop-ts:7400` away from home), pan, zoom, press Home and lay roads
-with R. T centres on the town, drawn with six houses, a market and roads. O
-colours land by owner (you, the rival Redrock Mining, the town, people).
-Clicking a tile opens the inspector: terrain, owner by name, deposit richness
-and building. Older worlds are kept as groundwork.format-<N>.db. No economy yet.
+with R. T centres on the town (six houses, a market, roads). O colours land
+by owner. A click opens the inspector: terrain, owner, richness, building.
+Older worlds are kept as groundwork.format-<N>.db. No economy yet.
 **At the end of Ring 1 Matt will be able to:** run the ore loop (stake, roads,
 depot, harvester, truck, sell to a growing town) against a Mind-led rival,
 chat with six named people and buy land in chat, on 40 attention a day.
