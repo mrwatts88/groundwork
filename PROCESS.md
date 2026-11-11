@@ -25,7 +25,7 @@ Ark (`~/code/ark/PROCESS.md`), adapted for a game.
 8. **The design is the source of truth.** If building proves DESIGN.md wrong,
    fix it and add a decision to section 24 in the same commit as the code.
 9. **Matt does only what only Matt can do:** pay, sign up, log in, type his
-   sudo password, and decide on money, his machines and anything public. And
+   sudo password, and decide on money and his machines. And
    play the game: playtest notes are his to give.
 10. **Fun is checked by Matt, everything else by tests.** Ring reviews end with
     a short playtest item for Matt. His notes feed the next ring's planning.
@@ -105,8 +105,7 @@ ring.
   `/compact` means the item was too big.
 - **Matt's items.** Owner `human`. Exact commands, one path, no options.
 - **Decisions.** Engineering decisions are the agent's, recorded in DESIGN.md
-  section 24 when expensive to reverse. Money, Matt's machines and anything
-  public are Matt's.
+  section 24 when expensive to reverse. Money and Matt's machines are Matt's.
 - **Models.** Automated tests never call a real model. Live `claude -p` calls
   happen only in items that say so.
 - **Git.** Work on `main` in small green commits. The process authorizes

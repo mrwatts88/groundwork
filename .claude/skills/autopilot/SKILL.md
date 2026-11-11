@@ -14,7 +14,7 @@ only ever see plan output and the short reports subagents send back.
   approve the routine actions PROCESS.md already authorizes (committing,
   pushing to this repo's origin, `scripts/deploy.sh`).
 - You may not: anything PROCESS.md reserves for Matt. That means money, sign-ups,
-  logins, sudo, his machines beyond the deploy, anything public, approving a
+  logins, sudo, his machines beyond the deploy, approving a
   human item, or writing playtest notes. Those wait for him. Do not invent
   answers to a builder's question that only Matt can answer.
 
