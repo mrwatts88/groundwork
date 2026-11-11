@@ -147,3 +147,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Learned:** a second Playwright webServer with a fast clock (port 8792, 25 ms ticks) runs timed checks such as a survey in about 9 s without touching the 250 ms server the other tests rely on. S already pans, so Stake is on C.
 - **Known issue:** the HUD message shown after a click (for example "owned by Nobody") does not update when a survey finishes. The inspector is correct. Not blocking.
 - **Next:** R1-06 the depot.
+
+## 2026-11-11, R1-06 the depot
+
+- **Did:** `place_building` with kind depot. It needs a dry tile the Op owns, free of roads and buildings, with a road on one of its four sides. Price 1,200 plus 300 hiring, 5 attention, 480 tick build. Then it is staffed. `updateBuildings` in packages/sim/src/buildings.ts pays a 100 wage at each day start, idles a depot its Op cannot pay, and rehires on the first tick the Op can pay. Cash never goes below 0. Buildings are in the snapshot, hash and delta. Old saves load with none. `place_road` is refused with `occupied` on a building tile. The client has Depot (B) in the sidebar, a scaffold and shed drawing, and the inspector Building row shows the state. The scenario log builds depots. D-017 was added. README and docs/dev.md (A building) were updated.
+- **Verified:** verifier PASS R1-06 on the second run. The first run failed because a road could be laid on a depot tile. make check ok, 148 unit tests, determinism hash aaaf826178c71d7c, Playwright 5 of 5 (11-depot-building.png, 12-depot-built.png).
+- **Learned:** a new kind of thing on a tile needs every existing command that takes a tile to respect it. Check each `apply` handler, not just the new one. One spec table (`BUILDING_SPEC`) keeps the next building a single row.
+- **Next:** R1-07 vehicles and the harvester route.
