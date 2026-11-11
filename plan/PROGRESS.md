@@ -26,3 +26,10 @@ Append-only. One entry per session: date, item, Did, Verified, Learned, Next.
 - **Did:** added /autopilot (main session stands in for Matt, builders and the verifier run as subagents). Matt activated the wider allowlist. Matt approved the GitHub repo and chose public (R0-01 done, D-009). R0-02 now checks PUBLIC and scans history for secrets before the first push.
 - **Learned:** subagents cannot spawn subagents, so the autopilot main session runs the verifier between builder and wrap. The auto-mode classifier blocks agents editing .claude/settings.json. Changes go in scripts/agent/claude-settings.json for Matt to copy.
 - **Next:** /autopilot from a fresh session in ~/code/groundwork, starting with R0-02.
+
+## 2026-11-11, R0-03 workspace scaffold
+
+- **Did:** pnpm workspace with protocol, sim, minds, server and client packages. Each tsconfig extends `tsconfig.base.json` (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes). A root `vitest.config.ts` runs every `packages/*/src/**/*.test.ts`. The Makefile `ts-check` step prints the typecheck and Vitest runs, and installs first if `node_modules` is missing. Added README.md and docs/dev.md.
+- **Verified:** verifier PASS R0-03. typecheck and 6 tests across 5 packages pass. A type error in sim makes `make check-fast` exit 2.
+- **Learned:** `pnpm add` now pulls TypeScript 7 and Vitest 5. `@types/node` defaults to 26, so it is pinned to 22 to match the runtime. Packages export TS source with no build step. That is fine for Vite and Vitest, but the server will need a build or a TS loader before it runs under plain Node on the Fedora box (R0 deploy item). No push yet, because R0-02 (the remote) is waiting on Matt.
+- **Next:** R0-04 sim core. Matt: R0-02.

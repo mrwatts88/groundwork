@@ -59,7 +59,9 @@
         "introducing a type error in packages/sim makes make check-fast exit non-zero (verifier tries it on a scratch copy or reverts it)",
         "README.md and docs/dev.md exist and say how to install and run the checks"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-03. ls packages prints client minds protocol server sim. Every package tsconfig extends tsconfig.base.json (strict true). pnpm -s typecheck exit 0, pnpm -s test 5 files 6 tests exit 0, one or more per package. make check-fast shows typecheck and vitest runs and check-fast: ok. A sim type error made check-fast exit 2 (TS2322) on a scratch copy. README.md and docs/dev.md give install and check steps.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-04",
