@@ -136,7 +136,9 @@
         "the HUD shows the game date and clock speed, read from the DOM by the test",
         "the server serves the built client at / so one port does everything"
       ],
-      "status": "in_progress"
+      "status": "done",
+      "evidence": "verifier: PASS R0-06. Playwright smoke 2 passed: canvas drawn, 1-map.png shows isometric map with water, grass, forest, hills, rock and deposits, click in road mode puts a road in 3-road.png (pixel diff) and in server state (road[i] != 0, cash 10000 to 9990), HUD date matches Day N, HH:MM and advances, speed reads 1x live and 4x sped up, GET / and /health on one port. make check-fast ok, 55 tests.",
+      "done_at": "2026-11-11"
     },
     {
       "id": "R0-07",

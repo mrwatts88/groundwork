@@ -14,7 +14,10 @@ hash. `make slow` checks that two processes reach the same hash. The server
 is in (R0-05): `pnpm --filter @groundwork/server start` serves `/health` and a
 WebSocket at `/ws`, runs the present, speed-up and away clock, and keeps a
 daily SQLite snapshot plus the command log, so a restart resumes exactly.
-Nothing is visible yet. A lean headless `claude -p` NPC call was proven on the Fedora box
+The client is in (R0-06): `pnpm build`, then start the server and open
+`http://localhost:8787` to see the isometric map, pan and zoom, lay roads on
+your land and watch the date and clock speed in the HUD. `make check` runs
+the Playwright smoke test. A lean headless `claude -p` NPC call was proven on the Fedora box
 (DESIGN.md 13.4).
 
 **In progress:** nothing.
@@ -35,3 +38,4 @@ inside a package use the `.ts` extension. The server runs its TS directly
 with `node --experimental-strip-types`. The toolchain is TypeScript 7 and
 Vitest 5. Sim test files typecheck under `packages/sim/tsconfig.test.json`,
 which has node types. The src tsconfig has none, which keeps node out of the sim.
+Client e2e and config files typecheck under `packages/client/tsconfig.node.json`.
