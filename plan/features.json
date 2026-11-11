@@ -594,6 +594,7 @@
       ],
       "acceptance": [
         "the rival's reflex AI lives in packages/sim, runs every tick and acts only by calling apply() with the rival's Op id under the same costs and attention as the player (verifier reads the code)",
+        "the rival reflex decides only from what the rival could see as a player would (its own Op, the map, the public market and parcels) through one view function in packages/sim. A test shows changing the player's cash, cargo or depot stock does not change any command the rival issues",
         "a headless scenario test from a fresh world with no player commands: within 5 game days the rival has staked a deposit, built a depot, run a harvester and a truck, and sold ore to the town",
         "the reflex follows a strategy (which deposit to go for, a sell price floor, whether to expand) that a set_strategy command can change, and a test shows a changed strategy changes the rival's next choice",
         "a 30 game day headless run with the rival reflex holds the invariants: no negative stock or cash, every Op's cash matches its ledger, no Op ever has more than 40 attention points in a day (test)",
@@ -853,7 +854,7 @@
       ],
       "acceptance": [
         "every Ring 1 done-when line in DESIGN.md 23.2 is checked and holds",
-        "every invariant in DESIGN.md section 1 that Ring 1 touches holds: one command API for every actor, the rival and people included, the same rules and attention for every Op, no Math.random or Date in packages/sim, Mind output enters the world only as logged commands, no real model in automated tests",
+        "every invariant in DESIGN.md section 1 that Ring 1 touches holds: one command API for every actor, the rival and people included, the same rules, attention and information limits for every Op (the rival's reflex and Mind see only what a player in its place could), no Math.random or Date in packages/sim, Mind output enters the world only as logged commands, no real model in automated tests",
         "tests/rings/ring1.sh exits 0",
         "the commit is tagged ring-1"
       ],
@@ -864,6 +865,7 @@
       "ring": 1,
       "title": "Matt plays Ring 1",
       "owner": "human",
+      "effort": "low",
       "gates_ring": false,
       "instructions": "Open http://laptop.local:7400 on the Mac (http://laptop-ts:7400 away from home). Stake a deposit, lay roads to it and to the town, build a depot, buy a harvester and a truck, and sell some ore. Talk to one of the town's people and try to buy a parcel in chat. Watch what the rival does. Then tell the next session what was fun, what was dull and what was confusing, and it goes into plan/PLAYTEST.md.",
       "design": [
